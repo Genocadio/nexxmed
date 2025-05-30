@@ -1,0 +1,27 @@
+spring:
+  application:
+    name: users
+
+  datasource:
+    url: jdbc:postgresql://localhost:5432/user_service
+    username: postgres
+    password: postgres
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: true
+        show_sql: true
+server:
+  port: 8070
+grpc:
+  server:
+    port: 9071
+
+eureka:
+  instance:
+    metadata-map:
+      grpc-port: ${grpc.server.port}

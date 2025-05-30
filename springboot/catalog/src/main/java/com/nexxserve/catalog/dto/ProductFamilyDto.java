@@ -1,0 +1,56 @@
+package com.nexxserve.catalog.dto;
+
+import com.nexxserve.catalog.enums.HazardClass;
+import com.nexxserve.catalog.enums.LifecycleStage;
+import com.nexxserve.catalog.enums.ProductStatus;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.UUID;
+
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+public class ProductFamilyDto {
+    private UUID id;
+
+    @NotBlank(message = "Product family name is required")
+    private String name;
+
+    private String description;
+    private String shortDescription;
+
+    @NotNull(message = "Category is required")
+    private CategoryDto category;
+
+    private List<UUID> subCategoryIds;
+    private List<String> tags;
+    private String searchKeywords;
+    private String brand;
+
+    @NotNull(message = "Status is required")
+    private ProductStatus status;
+
+    private LocalDateTime launchDate;
+    private LocalDateTime discontinueDate;
+
+    @NotNull(message = "Lifecycle stage is required")
+    private LifecycleStage lifecycleStage;
+
+    private Boolean ageRestricted;
+    private HazardClass hazardClass;
+    private List<String> certifications;
+
+    private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
+    private String createdBy;
+    private String updatedBy;
+    private Integer version;
+}

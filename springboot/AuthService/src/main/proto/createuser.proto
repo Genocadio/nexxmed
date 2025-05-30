@@ -1,0 +1,38 @@
+syntax = "proto3";
+  option java_multiple_files = true;
+  option java_package = "com.nexxserve.authservice.grpc";
+
+  message UserRequest {
+    string firstName = 1;
+    string email = 2;
+    string lastName = 3;
+    string username = 4;
+    string phone = 5;
+    string profileUrl = 6;
+    string clinicId = 7;
+  }
+
+  message UserResponse {
+    string userId = 1;
+    string firstName = 2;
+    string email = 3;
+    string lastName = 4;
+    string username = 5;
+    string phone = 6;
+    string profileUrl = 7;
+    string clinicId = 8;
+  }
+
+
+
+  message ErrorResponse {
+    string errorCode = 1;
+    string message = 2;
+  }
+
+
+
+
+  service UserGrpcService {
+    rpc CreateUser(UserRequest) returns (UserResponse);
+  }

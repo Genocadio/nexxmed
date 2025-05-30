@@ -1,0 +1,27 @@
+syntax = "proto3";
+package com.nexxserve.billing;
+
+option java_multiple_files = true;
+option java_package = "com.nexxserve.billing.grpc";
+
+// Request message - empty since no parameters are needed
+message PermissionsRequest {
+}
+
+// Single permission definition
+message PermissionProto {
+  string permission = 1;
+  string description = 2;
+  string role = 3;
+}
+
+// Response message containing list of permissions
+message PermissionsResponse {
+  repeated PermissionProto permissions = 1;
+  string serviceName = 2;
+}
+
+// The gRPC service definition
+service PermissionsService {
+  rpc GetPermissions(PermissionsRequest) returns (PermissionsResponse);
+}

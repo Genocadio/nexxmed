@@ -1,0 +1,35 @@
+spring:
+  application:
+    name: billing
+
+server:
+  port: 8081
+
+
+jwt:
+  secret: NWI4eUJFSE1iUWVUaFdtWnE0dDZ3OXpDRkpOY1JmVWpYbjJyNXU4eEFER0thUGRTZ1ZrWQ==
+
+eureka:
+  client:
+    serviceUrl:
+      defaultZone: http://eureka-server:8761/eureka/
+    register-with-eureka: true
+    fetch-registry: true
+  instance:
+    prefer-ip-address: true
+    instanceId: ${spring.application.name}:${random.uuid}
+    metadata-map:
+      grpc-port: 9094
+
+# Enable Spring Boot Actuator endpoints
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: always
+grpc:
+  server:
+    port: 9094

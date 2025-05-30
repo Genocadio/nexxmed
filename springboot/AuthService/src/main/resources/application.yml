@@ -1,0 +1,57 @@
+spring:
+  application:
+    name: AuthService
+
+  datasource:
+    url: jdbc:postgresql://localhost:5432/auth_service
+    username: postgres
+    password: postgres
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: true
+        show_sql: true
+
+server:
+    port: 8072
+jwt:
+  secret: NWI4eUJFSE1iUWVUaFdtWnE0dDZ3OXpDRkpOY1JmVWpYbjJyNXU4eEFER0thUGRTZ1ZrWQ==
+  expiration: 86400000
+    # Use the service name registered in Eureka instead of hardcoded URL
+user:
+    service:
+        url: http://localhost:8080
+services:
+    list: billing
+    base-url: http://localhost:8080
+
+resilience4j:
+  circuitbreaker:
+    instances:
+      userService:
+        registerHealthIndicator: true
+        slidingWindowSize: 10
+        slidingWindowType: COUNT_BASED
+        minimumNumberOfCalls: 5
+        failureRateThreshold: 50
+        waitDurationInOpenState: 10s
+        permittedNumberOfCallsInHalfOpenState: 3
+        automaticTransitionFromOpenToHalfOpenEnabled: true
+        ignore-exceptions:
+          - com.nexxserve.authservice.exception.UserAlreadyExistsException
+  retry:
+    instances:
+      userService:
+        maxAttempts: 3
+        waitDuration: 1s
+        enableExponentialBackoff: true
+        exponentialBackoffMultiplier: 2
+  timelimiter:
+    instances:
+      userService:
+        timeoutDuration: 5s
+        cancelRunningFuture: true

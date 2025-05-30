@@ -1,0 +1,59 @@
+server:
+  http_listen_port: 9080
+  grpc_listen_port: 0
+
+positions:
+  filename: /tmp/positions.yaml
+
+clients:
+  - url: http://loki:3100/loki/api/v1/push
+
+scrape_configs:
+  # Spring Boot applications log scraping
+  - job_name: springboot
+    static_configs:
+    - targets:
+        - localhost
+      labels:
+        job: springboot
+        __path__: /var/log/spring-app/*.log
+
+  # Docker container logs
+  - job_name: docker
+    docker_sd_configs:
+      - host: unix:///var/run/docker.sock
+        refresh_interval: 5s
+    relabel_configs:
+      - source_labels: ['__meta_docker_container_name']
+        regex: '/(.*)'
+        target_label: 'container'
+      - source_labels: ['__meta_docker_container_log_stream']
+        target_label: 'logstream'
+    
+  # Java specific logs for microservices
+  - job_name: java
+    static_configs:
+    - targets:
+        - localhost
+      labels:
+        job: java
+        service: users-service
+        __path__: /var/log/*/users-service*.log
+    - targets:
+        - localhost
+      labels:
+        job: java
+        service: billing-service
+        __path__: /var/log/*/billing-service*.log
+    - targets:
+        - localhost
+      labels:
+        job: java
+        service: auth-service
+        __path__: /var/log/*/auth-service*.log
+    - targets:
+        - localhost
+      labels:
+        job: java
+        service: eureka-server
+        __path__: /var/log/*/eureka-server*.log

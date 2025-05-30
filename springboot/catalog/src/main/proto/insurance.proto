@@ -1,0 +1,76 @@
+syntax = "proto3";
+
+package com.nexxserve.catalog.grpc;
+
+option java_multiple_files = true;
+option java_package = "com.nexxserve.catalog.grpc";
+option java_outer_classname = "InsuranceServiceProto";
+
+// Insurance status enum with correct values
+enum InsuranceStatusProto {
+  UNKNOWN = 0;
+  ACTIVE = 1;
+  INACTIVE = 2;
+  SUSPENDED = 3;
+  PENDING_APPROVAL = 4;
+}
+
+// Approval type enum with correct values
+enum ApprovalTypeProto {
+  UNKNOWN_APPROVAL = 0;
+  AUTOMATIC = 1;
+  MANUAL_APPROVAL = 2;
+  CONDITIONAL = 3;
+  PRE_AUTHORIZATION = 4;
+}
+
+// Request message for paginated insurance requests
+message InsurancePageRequest {
+  int32 page = 1;
+  int32 size = 2;
+  repeated string sort = 3;
+}
+
+// Request message for fetching insurance by ID
+message InsuranceByIdRequest {
+  string id = 1;
+}
+
+// Individual insurance item
+message InsuranceProto {
+  string id = 1;
+  string name = 2;
+  string code = 3;
+  string description = 4;
+  InsuranceStatusProto status = 5;
+  string contact_email = 6;
+  string contact_phone = 7;
+  string address = 8;
+  bool requires_pre_approval = 9;
+  ApprovalTypeProto default_approval_type = 10;
+  double default_client_contribution_percentage = 11;
+  double max_coverage_amount = 12;
+  string created_at = 13;
+  string updated_at = 14;
+  string created_by = 15;
+  string updated_by = 16;
+  int32 version = 17;
+}
+
+// Response containing paginated insurance results
+message InsurancePageResponse {
+  repeated InsuranceProto insurances = 1;
+  int32 total_pages = 2;
+  int64 total_elements = 3;
+  int32 current_page = 4;
+  int32 size = 5;
+}
+
+// Service definition for Insurance operations
+service InsuranceGrpcService {
+  // Get paginated list of insurances
+  rpc GetAllInsurances(InsurancePageRequest) returns (InsurancePageResponse) {}
+
+  // Get insurance by ID
+  rpc GetInsuranceById(InsuranceByIdRequest) returns (InsuranceProto) {}
+}

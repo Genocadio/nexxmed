@@ -1,0 +1,25 @@
+syntax = "proto3";
+
+option java_multiple_files = true;
+option java_package = "com.nexxserve.authservice.grpc";
+
+package users;
+
+service UserService {
+  rpc SearchUser(SearchUserRequest) returns (SearchUserResponse);
+}
+
+message SearchUserRequest {
+  string search_parameter = 1;
+}
+
+message SearchUserResponse {  // Changed from UserResponse
+  string user_id = 1;
+  string first_name = 2;
+  string last_name = 3;
+  string email = 4;
+  string phone = 5;
+  string profile_url = 6;
+  string clinic_id = 7;
+  string username = 8;
+}

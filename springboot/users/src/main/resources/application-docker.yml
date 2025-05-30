@@ -1,0 +1,44 @@
+spring:
+  application:
+    name: users
+
+  datasource:
+    url: jdbc:postgresql://postgres-db:5432/user_service
+    username: postgres
+    password: postgres
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+
+server:
+  port: 8085
+
+grpc:
+  server:
+    port: 9092
+
+eureka:
+  client:
+    serviceUrl:
+      defaultZone: http://eureka-server:8761/eureka/
+    register-with-eureka: true
+    fetch-registry: true
+  instance:
+    prefer-ip-address: true
+    instanceId: ${spring.application.name}:${random.uuid}
+    metadata-map:
+      grpc-port: ${grpc.server.port}
+
+# Enable Spring Boot Actuator endpoints for health checks
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: always

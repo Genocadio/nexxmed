@@ -1,0 +1,18 @@
+# Spring Boot application configuration file
+
+spring:
+  application:
+    name: billing
+server:
+  port: 8087
+
+grpc:
+  server:
+    port: 9097
+
+eureka:
+  instance:
+    metadata-map:
+      grpc-port: 9097
+jwt:
+  secret: NWI4eUJFSE1iUWVUaFdtWnE0dDZ3OXpDRkpOY1JmVWpYbjJyNXU4eEFER0thUGRTZ1ZrWQ==

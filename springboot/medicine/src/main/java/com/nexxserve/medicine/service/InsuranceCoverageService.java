@@ -105,73 +105,77 @@ public class InsuranceCoverageService {
         return mapper.toResponseDto(saved);
     }
 
-    public InsuranceCoverageResponseDto update(UUID id, InsuranceCoverageRequestDto requestDto, String username) {
-        validateRequest(requestDto);
+   public InsuranceCoverageResponseDto update(UUID id, InsuranceCoverageRequestDto requestDto, String username) {
+       validateRequest(requestDto);
 
-        MedicineInsuranceCoverage existing = repository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Insurance coverage not found with id: " + id));
+       MedicineInsuranceCoverage existing = repository.findById(id)
+               .orElseThrow(() -> new RuntimeException("Insurance coverage not found with id: " + id));
 
-        // Update fields
-        existing.setInsuranceId(requestDto.getInsuranceId());
-        existing.setStatus(requestDto.getStatus());
-        existing.setInsurancePrice(requestDto.getInsurancePrice());
-        existing.setClientContributionPercentage(requestDto.getClientContributionPercentage());
-        existing.setInsuranceCoveragePercentage(
-            BigDecimal.valueOf(100).subtract(requestDto.getClientContributionPercentage())
-        );
-        existing.setRequiresPreApproval(requestDto.getRequiresPreApproval() != null ?
-                requestDto.getRequiresPreApproval() : false);
-        existing.setApprovalType(requestDto.getApprovalType());
-        existing.setMaxCoverageAmount(requestDto.getMaxCoverageAmount());
-        existing.setMinClientContribution(requestDto.getMinClientContribution());
-        existing.setMaxClientContribution(requestDto.getMaxClientContribution());
-        existing.setEffectiveFrom(requestDto.getEffectiveFrom());
-        existing.setEffectiveTo(requestDto.getEffectiveTo());
-        existing.setConditions(requestDto.getConditions());
-        existing.setApprovalNotes(requestDto.getApprovalNotes());
-        existing.setUpdatedBy(username);
-        existing.setUpdatedAt(LocalDateTime.now());
+       // Update fields
+       // Insurance relationship is handled by the mapper when creating a new entity
+       // We need to replace the insurance entity instead of trying to set an ID
+       existing.setInsurance(mapper.toEntity(requestDto).getInsurance());
+       existing.setInsuranceName(mapper.toEntity(requestDto).getInsuranceName());
 
-        // Check if medicine type has changed
-        boolean medicineTypeChanged = false;
+       existing.setStatus(requestDto.getStatus());
+       existing.setInsurancePrice(requestDto.getInsurancePrice());
+       existing.setClientContributionPercentage(requestDto.getClientContributionPercentage());
+       existing.setInsuranceCoveragePercentage(
+           BigDecimal.valueOf(100).subtract(requestDto.getClientContributionPercentage())
+       );
+       existing.setRequiresPreApproval(requestDto.getRequiresPreApproval() != null ?
+               requestDto.getRequiresPreApproval() : false);
+       existing.setApprovalType(requestDto.getApprovalType());
+       existing.setMaxCoverageAmount(requestDto.getMaxCoverageAmount());
+       existing.setMinClientContribution(requestDto.getMinClientContribution());
+       existing.setMaxClientContribution(requestDto.getMaxClientContribution());
+       existing.setEffectiveFrom(requestDto.getEffectiveFrom());
+       existing.setEffectiveTo(requestDto.getEffectiveTo());
+       existing.setConditions(requestDto.getConditions());
+       existing.setApprovalNotes(requestDto.getApprovalNotes());
+       existing.setUpdatedBy(username);
+       existing.setUpdatedAt(LocalDateTime.now());
 
-        if (requestDto.getGenericId() != null && (existing.getGeneric() == null ||
-                !existing.getGeneric().getId().equals(requestDto.getGenericId()))) {
-            medicineTypeChanged = true;
-        } else if (requestDto.getBrandId() != null && (existing.getBrand() == null ||
-                !existing.getBrand().getId().equals(requestDto.getBrandId()))) {
-            medicineTypeChanged = true;
-        } else if (requestDto.getVariantId() != null && (existing.getVariant() == null ||
-                !existing.getVariant().getId().equals(requestDto.getVariantId()))) {
-            medicineTypeChanged = true;
-        }
+       // Check if medicine type has changed
+       boolean medicineTypeChanged = false;
 
-        // If medicine type changed, update the entity relationships
-        if (medicineTypeChanged) {
-            // Clear existing relationships
-            existing.setGeneric(null);
-            existing.setBrand(null);
-            existing.setVariant(null);
+       if (requestDto.getGenericId() != null && (existing.getGeneric() == null ||
+               !existing.getGeneric().getId().equals(requestDto.getGenericId()))) {
+           medicineTypeChanged = true;
+       } else if (requestDto.getBrandId() != null && (existing.getBrand() == null ||
+               !existing.getBrand().getId().equals(requestDto.getBrandId()))) {
+           medicineTypeChanged = true;
+       } else if (requestDto.getVariantId() != null && (existing.getVariant() == null ||
+               !existing.getVariant().getId().equals(requestDto.getVariantId()))) {
+           medicineTypeChanged = true;
+       }
 
-            // Set the new relationship
-            if (requestDto.getGenericId() != null) {
-                Generic generic = genericRepository.findById(requestDto.getGenericId())
-                        .orElseThrow(() -> new RuntimeException("Generic not found with id: " + requestDto.getGenericId()));
-                existing.setGeneric(generic);
-            } else if (requestDto.getBrandId() != null) {
-                Brand brand = brandRepository.findById(requestDto.getBrandId())
-                        .orElseThrow(() -> new RuntimeException("Brand not found with id: " + requestDto.getBrandId()));
-                existing.setBrand(brand);
-            } else if (requestDto.getVariantId() != null) {
-                Variant variant = variantRepository.findById(requestDto.getVariantId())
-                        .orElseThrow(() -> new RuntimeException("Variant not found with id: " + requestDto.getVariantId()));
-                existing.setVariant(variant);
-            }
-        }
+       // If medicine type changed, update the entity relationships
+       if (medicineTypeChanged) {
+           // Clear existing relationships
+           existing.setGeneric(null);
+           existing.setBrand(null);
+           existing.setVariant(null);
 
-        MedicineInsuranceCoverage updated = repository.save(existing);
-        return mapper.toResponseDto(updated);
-    }
+           // Set the new relationship
+           if (requestDto.getGenericId() != null) {
+               Generic generic = genericRepository.findById(requestDto.getGenericId())
+                       .orElseThrow(() -> new RuntimeException("Generic not found with id: " + requestDto.getGenericId()));
+               existing.setGeneric(generic);
+           } else if (requestDto.getBrandId() != null) {
+               Brand brand = brandRepository.findById(requestDto.getBrandId())
+                       .orElseThrow(() -> new RuntimeException("Brand not found with id: " + requestDto.getBrandId()));
+               existing.setBrand(brand);
+           } else if (requestDto.getVariantId() != null) {
+               Variant variant = variantRepository.findById(requestDto.getVariantId())
+                       .orElseThrow(() -> new RuntimeException("Variant not found with id: " + requestDto.getVariantId()));
+               existing.setVariant(variant);
+           }
+       }
+
+       MedicineInsuranceCoverage updated = repository.save(existing);
+       return mapper.toResponseDto(updated);
+   }
 
     public void delete(UUID id) {
         if (!repository.existsById(id)) {

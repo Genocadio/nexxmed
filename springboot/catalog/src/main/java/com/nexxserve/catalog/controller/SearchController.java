@@ -45,17 +45,36 @@ public class SearchController {
     @GetMapping("/unified")
     public ResponseEntity<SearchResultDto> unifiedSearch(
             @RequestParam String term,
-            @RequestParam(defaultValue = "10") int familyLimit,
-            @RequestParam(defaultValue = "20") int variantLimit,
+            @RequestParam(required = false, defaultValue = "all") String type,
+            @RequestParam(defaultValue = "20") int limit,
             Pageable pageable) {
-        log.debug("REST request for unified search by term: {}", term);
+        log.debug("REST request for unified search by term: {} with type filter: {}", term, type);
 
-        // Create new Pageable objects with specified sizes
-        Pageable familyPageable = PageRequest.of(0, familyLimit, pageable.getSort());
-        Pageable variantPageable = PageRequest.of(0, variantLimit, pageable.getSort());
+        // Create pageable with the specified limit
+        Pageable limitedPageable = PageRequest.of(0, limit, pageable.getSort());
 
-        Page<ProductFamilyDto> families = productFamilyService.searchByTerm(term, familyPageable);
-        Page<ProductVariantDto> variants = productVariantService.searchByTerm(term, variantPageable);
+        // Initialize with empty values
+        Page<ProductFamilyDto> families = Page.empty();
+        Page<ProductVariantDto> variants = Page.empty();
+
+        // Search based on the type parameter
+        switch (type.toLowerCase()) {
+            case "families":
+                families = productFamilyService.searchByTerm(term, limitedPageable);
+                break;
+            case "variants":
+                variants = productVariantService.searchByTerm(term, limitedPageable);
+                break;
+            case "all":
+            default:
+                // If both types are requested, divide the limit between them
+                int halfLimit = limit / 2;
+                Pageable familyPageable = PageRequest.of(0, halfLimit, pageable.getSort());
+                Pageable variantPageable = PageRequest.of(0, limit - halfLimit, pageable.getSort());
+
+                families = productFamilyService.searchByTerm(term, familyPageable);
+                variants = productVariantService.searchByTerm(term, variantPageable);
+        }
 
         SearchResultDto result = SearchResultDto.builder()
                 .searchTerm(term)

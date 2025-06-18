@@ -38,7 +38,7 @@ package com.nexxserve.authservice.config;
             return http
                     .csrf(AbstractHttpConfigurer::disable)
                     .authorizeHttpRequests(auth -> auth
-                            .requestMatchers("/auth/login", "/auth/users/**", "/auth/register", "/auth/**", "/auth/public/**", "/api/permissions/**", "/api/permissions").permitAll()
+                            .requestMatchers("/auth/login", "/auth/users/**", "/auth/register", "/auth/**", "/auth/public/**", "/api/permissions/**", "/actuator/**", "/api/permissions").permitAll()
                             .anyRequest().authenticated()
                     )
                     .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))

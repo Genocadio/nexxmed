@@ -4,11 +4,11 @@ spring:
   application:
     name: billing
 server:
-  port: 8087
+  port: 5003
 
 grpc:
   server:
-    port: 9097
+    port: 5103
 
 eureka:
   instance:

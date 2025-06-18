@@ -2,18 +2,24 @@ package com.nexxserve.medicine.mapper;
 
 import com.nexxserve.medicine.dto.InsuranceCoverageRequestDto;
 import com.nexxserve.medicine.dto.InsuranceCoverageResponseDto;
+import com.nexxserve.medicine.entity.Insurance;
 import com.nexxserve.medicine.entity.MedicineInsuranceCoverage;
+import com.nexxserve.medicine.repository.InsuranceRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 @Component
+@RequiredArgsConstructor
 public class InsuranceCoverageMapper {
+
+    private final InsuranceRepository insuranceRepository;
 
     public InsuranceCoverageResponseDto toResponseDto(MedicineInsuranceCoverage entity) {
         if (entity == null) return null;
 
         InsuranceCoverageResponseDto dto = new InsuranceCoverageResponseDto();
         dto.setId(entity.getId());
-        dto.setInsuranceId(entity.getInsuranceId());
+        dto.setInsuranceId(entity.getInsurance().getId());
         dto.setInsuranceName(entity.getInsuranceName());
 
 
@@ -49,10 +55,11 @@ public class InsuranceCoverageMapper {
     public MedicineInsuranceCoverage toEntity(InsuranceCoverageRequestDto dto) {
         if (dto == null) return null;
 
+        Insurance insurance = insuranceRepository.findById(dto.getInsuranceId())
+                .orElseThrow(() -> new RuntimeException("Insurance not found with id: " + dto.getInsuranceId()));
 
         return MedicineInsuranceCoverage.builder()
-                .insuranceId(dto.getInsuranceId())
-                .insuranceName(dto.getInsuranceName())
+                .insurance(insurance)
                 .status(dto.getStatus())
                 .insurancePrice(dto.getInsurancePrice())
                 .clientContributionPercentage(dto.getClientContributionPercentage())

@@ -34,8 +34,8 @@ COPY --from=build /app/build/libs/*.jar app.jar
 ENV SPRING_PROFILES_ACTIVE=docker
 
 # Expose the application port
-EXPOSE 8081
-EXPOSE 9090
+EXPOSE 6003
+EXPOSE 6103
 
 # Set the startup command
 ENTRYPOINT ["java", "-jar", "-Dspring.profiles.active=docker", "app.jar"]

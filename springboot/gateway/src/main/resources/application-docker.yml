@@ -52,8 +52,59 @@ spring:
             - StripPrefix=2
             - RewritePath=/health/billing/(?<segment>.*), /actuator/health
 
+        # Medicine Service Routes
+        - id: medicine-service
+          uri: lb://medicine
+          predicates:
+            - Path=/api/medicine/**
+          filters:
+            - StripPrefix=1
+            - name: CircuitBreaker
+              args:
+                name: medicine-service
+                fallbackUri: forward:/fallback/medicine
+            # Add DedupeResponseHeader to remove duplicate CORS headers
+            - name: DedupeResponseHeader
+              args:
+                name: Access-Control-Allow-Origin Access-Control-Allow-Credentials
+                strategy: RETAIN_FIRST
+
+        #catalog-service
+        - id: catalog-service
+          uri: lb://catalog
+          predicates:
+            - Path=/api/catalog/**
+          filters:
+            - StripPrefix=1
+            - name: CircuitBreaker
+              args:
+                name: catalog-service
+                fallbackUri: forward:/fallback/catalog
+            # Add DedupeResponseHeader to remove duplicate CORS headers
+            - name: DedupeResponseHeader
+              args:
+                name: Access-Control-Allow-Origin Access-Control-Allow-Credentials
+                strategy: RETAIN_FIRST
+        # Inventory service
+        - id: inventory-service
+          uri: lb://inventory
+          predicates:
+            - Path=/api/inventory/**
+          filters:
+            - StripPrefix=1
+            - name: CircuitBreaker
+              args:
+                name: inventory-service
+                fallbackUri: forward:/fallback/inventory
+            # Add DedupeResponseHeader to remove duplicate CORS headers
+            - name: DedupeResponseHeader
+              args:
+                name: Access-Control-Allow-Origin Access-Control-Allow-Credentials
+                strategy: RETAIN_FIRST
+
       # Global CORS Configuration
       globalcors:
+        add-to-simple-url-handler-mapping: true
         corsConfigurations:
           '[/**]':
             allowedOrigins:
@@ -83,9 +134,14 @@ spring:
             redis-rate-limiter.burstCapacity: 20
             redis-rate-limiter.requestedTokens: 1
             key-resolver: "#{@userKeyResolver}"
+        # Add global DedupeResponseHeader filter
+        - name: DedupeResponseHeader
+          args:
+            name: Access-Control-Allow-Origin Access-Control-Allow-Credentials
+            strategy: RETAIN_FIRST
 
 server:
-  port: 8080
+  port: 6006
 
 # Eureka Configuration
 eureka:
@@ -97,7 +153,6 @@ eureka:
   instance:
     prefer-ip-address: true
     instanceId: ${spring.application.name}:${random.uuid}
-
 
 # JWT Configuration
 jwt:
@@ -139,8 +194,6 @@ resilience4j:
         waitDuration: 1s
         enableExponentialBackoff: true
         exponentialBackoffMultiplier: 2
-
-
 
 # Management Configuration
 management:

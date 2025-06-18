@@ -2,6 +2,7 @@ package com.nexxserve.catalog.service;
 
 import com.nexxserve.catalog.dto.*;
 import com.nexxserve.catalog.enums.ProductStatus;
+import com.nexxserve.catalog.exception.ResourceNotFoundException;
 import com.nexxserve.catalog.mapper.ProductInsuranceCoverageMapper;
 import com.nexxserve.catalog.mapper.ProductVariantMapper;
 import com.nexxserve.catalog.model.entity.Insurance;
@@ -93,7 +94,7 @@ public class ProductVariantService {
     public ProductVariantDto findById(UUID id) {
         log.debug("Finding product variant with id: {}", id);
         ProductVariant productVariant = productVariantRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Product variant not found with id: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Product variant not found with id: " + id));
         return productVariantMapper.toDto(productVariant);
     }
 

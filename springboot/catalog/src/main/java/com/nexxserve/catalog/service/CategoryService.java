@@ -2,6 +2,7 @@ package com.nexxserve.catalog.service;
 
 import com.nexxserve.catalog.dto.CategoryDto;
 import com.nexxserve.catalog.exception.CategoryInUseException;
+import com.nexxserve.catalog.exception.ResourceNotFoundException;
 import com.nexxserve.catalog.mapper.CategoryMapper;
 import com.nexxserve.catalog.model.entity.CategoryReference;
 import com.nexxserve.catalog.repository.CategoryReferenceRepository;
@@ -37,7 +38,7 @@ public class CategoryService {
     public CategoryDto findById(UUID id) {
         log.debug("Finding category with id: {}", id);
         CategoryReference category = categoryRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Category not found with id: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Category not found with id: " + id));
         return categoryMapper.toDto(category);
     }
 

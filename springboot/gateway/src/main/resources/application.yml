@@ -87,7 +87,7 @@ spring:
             add-request-headers-enabled: true
 
 server:
-  port: 8089
+  port: 5006
 
 # Eureka Configuration
 eureka:

@@ -1,6 +1,9 @@
 spring:
+  mvc:
+    cors:
+      enabled: false
   application:
-    name: medicine
+    name: medicine-service
   datasource:
     url: jdbc:postgresql://localhost:5432/medicine
     username: postgres
@@ -22,9 +25,9 @@ spring:
     baseline-on-migrate: true
     baseline-version: 1.0
 server:
-  port: 9080
+  port: 5004
   servlet:
-    context-path: /medicine-api
+    context-path: /medicine
 logging:
   level:
     com.nexxserve.medicine: DEBUG
@@ -39,3 +42,13 @@ management:
   endpoint:
     health:
       show-details: always
+
+grpc:
+    server:
+        port: 5104
+
+eureka:
+    instance:
+      instanceId: ${spring.application.name}:${random.uuid}
+      metadata-map:
+        grpc-port: ${grpc.server.port}

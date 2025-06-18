@@ -45,15 +45,15 @@ services:
       timeout: 10s
       retries: 3
       start_period: 60s
-
-  users-service:
+  
+  medicine-service:
     build:
-      context: ./users
+      context: ./medicine
       dockerfile: Dockerfile
-    container_name: users-service
+    container_name: medicine-service
     ports:
-      - "8085:8085"
-      - "9092:9092"
+      - "6004:6004"
+      - "6104:6104"
     depends_on:
       postgres-db:
         condition: service_healthy
@@ -66,7 +66,89 @@ services:
     networks:
       - backend
     healthcheck:
-      test: ["CMD-SHELL", "curl -f http://localhost:8080/actuator/health && curl -f http://eureka-server:8761/eureka/apps/users || exit 1"]
+      test: ["CMD-SHELL", "curl -f http://localhost:6004/medicine/actuator/health && curl -f http://eureka-server:8761/eureka/apps/medicine || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+  catalog-service:
+    build:
+      context: ./catalog
+      dockerfile: Dockerfile
+    container_name: catalog-service
+    ports:
+      - "6005:6005"
+      - "6105:6105"
+    depends_on:
+      
+      postgres-db:
+        condition: service_healthy
+      eureka-server:
+        condition: service_started
+      loki:
+        condition: service_healthy
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+    networks:
+      - backend
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:6005/catalog/actuator/health && curl -f http://eureka-server:8761/eureka/apps/catalog || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+  inventory-service:
+    build:
+      context: ./inventory
+      dockerfile: Dockerfile
+    container_name: inventory-service
+    ports:
+      - "6007:6007"
+      - "6107:6107"
+    depends_on:
+      
+      postgres-db:
+        condition: service_healthy
+      eureka-server:
+        condition: service_started
+      loki:
+        condition: service_healthy
+      medicine-service:
+        condition: service_healthy
+      catalog-service:
+        condition: service_healthy
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+    networks:
+      - backend
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:6007/actuator/health && curl -f http://eureka-server:8761/eureka/apps/inventory || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+  users-service:
+    build:
+      context: ./users
+      dockerfile: Dockerfile
+    container_name: users-service
+    ports:
+      - "6002:6002"
+      - "6102:6102"
+    depends_on:
+      postgres-db:
+        condition: service_healthy
+      eureka-server:
+        condition: service_started
+      loki:
+        condition: service_healthy
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+    networks:
+      - backend
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:6002/actuator/health && curl -f http://eureka-server:8761/eureka/apps/users || exit 1"]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -78,8 +160,8 @@ services:
       dockerfile: Dockerfile
     container_name: billing-service
     ports:
-      - "8081:8081"
-      - "9094:9094"
+      - "6003:6003"
+      - "6103:6103"
     depends_on:
       eureka-server:
         condition: service_healthy
@@ -90,7 +172,7 @@ services:
     networks:
       - backend
     healthcheck:
-      test: ["CMD-SHELL", "curl -f http://localhost:8081/actuator/health && curl -f http://eureka-server:8761/eureka/apps/BILLING || exit 1"]
+      test: ["CMD-SHELL", "curl -f http://localhost:6003/actuator/health && curl -f http://eureka-server:8761/eureka/apps/BILLING || exit 1"]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -102,8 +184,8 @@ services:
       dockerfile: Dockerfile
     container_name: auth-service
     ports:
-      - "8082:8082"
-      - "9091:9090"
+      - "6001:6001"
+      - "6101:6101"
     depends_on:
       postgres-db:
         condition: service_healthy
@@ -120,7 +202,7 @@ services:
     networks:
       - backend
     healthcheck:
-      test: ["CMD-SHELL", "curl -f http://localhost:8082/actuator/health || exit 1"]
+      test: ["CMD-SHELL", "curl -f http://localhost:6001/actuator/health || exit 1"]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -132,7 +214,7 @@ services:
       dockerfile: Dockerfile
     container_name: gateway-service
     ports:
-      - "8080:8080"
+      - "6006:6006"
     depends_on:
       eureka-server:
         condition: service_healthy
@@ -149,7 +231,7 @@ services:
     networks:
       - backend
     healthcheck:
-      test: ["CMD-SHELL", "curl -f http://localhost:8080/actuator/health || exit 1"]
+      test: ["CMD-SHELL", "curl -f http://localhost:6006/actuator/health || exit 1"]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -190,8 +272,8 @@ services:
   grafana:
     image: grafana/grafana:10.0.0
     container_name: grafana
-    ports:
-      - "3000:3000"
+    # ports:
+      # - "3000:3000"
     environment:
       - GF_SECURITY_ADMIN_USER=admin
       - GF_SECURITY_ADMIN_PASSWORD=admin

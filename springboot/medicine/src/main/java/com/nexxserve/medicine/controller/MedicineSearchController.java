@@ -5,10 +5,11 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/api/v1/search")
+@RequestMapping("/search")
 @RequiredArgsConstructor
 @CrossOrigin(origins = "*")
 public class MedicineSearchController {
@@ -18,6 +19,18 @@ public class MedicineSearchController {
     @GetMapping("/global")
     public ResponseEntity<Map<String, Object>> globalSearch(@RequestParam String q) {
         return ResponseEntity.ok(searchService.globalSearch(q));
+    }
+
+    @GetMapping("/unified")
+    public ResponseEntity<Map<String, Object>> unifiedSearch(
+            @RequestParam(required = true) String q,
+            @RequestParam(required = false) List<String> types) {
+
+        if (q == null || q.trim().isEmpty()) {
+            throw new IllegalArgumentException("Search query cannot be empty");
+        }
+
+        return ResponseEntity.ok(searchService.unifiedSearch(q, types));
     }
 
     @GetMapping("/variants/advanced")

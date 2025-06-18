@@ -3,7 +3,7 @@ spring:
     name: billing
 
 server:
-  port: 8081
+  port: 6003
 
 
 jwt:
@@ -19,7 +19,7 @@ eureka:
     prefer-ip-address: true
     instanceId: ${spring.application.name}:${random.uuid}
     metadata-map:
-      grpc-port: 9094
+      grpc-port: ${grpc.server.port}
 
 # Enable Spring Boot Actuator endpoints
 management:
@@ -32,4 +32,4 @@ management:
       show-details: always
 grpc:
   server:
-    port: 9094
+    port: 6103

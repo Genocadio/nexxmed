@@ -1,0 +1,94 @@
+syntax = "proto3";
+
+package com.nexxserve.medicine.grpc;
+
+option java_package = "com.nexxserve.medicine.grpc";
+option java_outer_classname = "MedicineProto";
+
+// Medicine service definition
+service MedicineService {
+  rpc GetMedicineByReference(MedicineReferenceRequest) returns (MedicineResponse);
+}
+
+// Request message
+message MedicineReferenceRequest {
+  string reference_id = 1;
+  ProductType product_type = 2;
+}
+
+// Product type enum
+enum ProductType {
+  MEDICINE_GENERIC = 0;
+  MEDICINE_BRAND = 1;
+  MEDICINE_VARIANT = 2;
+}
+
+// Unified response message
+message MedicineResponse {
+  string id = 1;
+  ProductType product_type = 2;
+  string name = 3;
+  string created_at = 4;
+  string updated_at = 5;
+
+  // Generic specific fields
+  GenericDetails generic_details = 6;
+
+  // Brand specific fields
+  BrandDetails brand_details = 7;
+
+  // Variant specific fields
+  VariantDetails variant_details = 8;
+
+  // Common insurance coverages
+  repeated InsuranceCoverage insurance_coverages = 9;
+}
+
+// Generic specific details
+message GenericDetails {
+  string chemical_name = 1;
+  string class_id = 2;
+  string class_name = 3;
+  string description = 4;
+  bool is_parent = 5;
+}
+
+// Brand specific details
+message BrandDetails {
+  string brand_name = 1;
+  string manufacturer = 2;
+  string country = 3;
+  string variant_id = 4;
+  string variant_name = 5;
+}
+
+// Variant specific details
+message VariantDetails {
+  string form = 1;
+  string route = 2;
+  string trade_name = 3;
+  string strength = 4;
+  string concentration = 5;
+  string packaging = 6;
+  string notes = 7;
+  map<string, string> extra_info = 8;
+  repeated string generic_ids = 9;
+  repeated GenericInfo generics = 10;
+}
+
+// Generic info for variants
+message GenericInfo {
+  string id = 1;
+  string name = 2;
+  string chemical_name = 3;
+}
+
+// Insurance coverage details
+message InsuranceCoverage {
+  string id = 1;
+  string insurance_name = 2;
+  string coverage_type = 3;
+  double coverage_percentage = 4;
+  double max_amount = 5;
+  string notes = 6;
+}

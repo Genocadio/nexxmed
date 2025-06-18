@@ -1,0 +1,194 @@
+syntax = "proto3";
+
+option java_multiple_files = true;
+option java_package = "com.nexxserve.catalog.grpc";
+option java_outer_classname = "ProductProto";
+
+package catalog;
+
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/wrappers.proto";
+
+service ProductService {
+  rpc GetProduct(GetProductRequest) returns (GetProductResponse);
+}
+
+message GetProductRequest {
+  string reference_id = 1;
+  GrpcProductType product_type = 2;
+}
+
+message GetProductResponse {
+  oneof product {
+    GrpcProductFamilyDetails family = 1;
+    ProductVariantDetails variant = 2;
+  }
+  bool success = 3;
+  string error_message = 4;
+}
+
+enum GrpcProductType {
+  CATALOG_PRODUCT_FAMILY = 0;
+  CATALOG_PRODUCT_VARIANT = 1;
+}
+
+enum GrpcProductStatus {
+  DRAFT = 0;
+  ACTIVE = 1;
+  SEASONAL = 2;
+  DISCONTINUED = 3;
+  RECALL = 4;
+  PENDING_APPROVAL = 5;
+}
+
+enum GrpcLifecycleStage {
+  LIFECYCLE_NEW = 0;
+  LIFECYCLE_GROWING = 1;
+  LIFECYCLE_MATURE = 2;
+  LIFECYCLE_DECLINING = 3;
+  LIFECYCLE_DISCONTINUED = 4;  // Changed from DISCONTINUED
+}
+
+enum GrpcHazardClass {
+  NONE = 0;
+  FLAMMABLE = 1;
+  CORROSIVE = 2;
+  TOXIC = 3;
+  EXPLOSIVE = 4;
+  RADIACTIVE = 5;
+}
+
+enum GrpcUnitOfMeasure {
+  PIECE = 0;
+  KILOGRAM = 1;
+  GRAM = 2;
+  LITER = 3;
+  MILLILITER = 4;
+  METER = 5;
+  CENTIMETER = 6;
+  INCH = 7;
+  POUND = 8;
+  OUNCE = 9;
+}
+
+
+enum GrpcCoverageStatus {
+  COVERAGE_ACTIVE = 0;         // Changed from ACTIVE
+  COVERAGE_INACTIVE = 1;
+  COVERAGE_PENDING_APPROVAL = 2; // Changed from PENDING_APPROVAL
+  COVERAGE_SUSPENDED = 3;
+  COVERAGE_EXPIRED = 4;
+}
+
+enum GrpcApprovalType {
+  AUTOMATIC = 0;
+  MANUAL_APPROVAL = 1;
+  CONDITIONAL = 2;
+  PRE_APPROVAL = 3;
+}
+
+message GrpcCategoryDetails {
+  string id = 1;
+  string name = 2;
+  string code = 3;
+  google.protobuf.StringValue description = 4;
+  google.protobuf.Int32Value level = 5;
+  google.protobuf.StringValue parent_id = 6;
+  google.protobuf.Int32Value display_order = 7;
+  bool is_active = 8;
+  google.protobuf.StringValue icon = 9;
+  google.protobuf.StringValue tax_category = 10;
+  google.protobuf.StringValue regulatory_category = 11;
+}
+
+message GrpcProductFamilyDetails {
+  string id = 1;
+  string name = 2;
+  google.protobuf.StringValue description = 3;
+  google.protobuf.StringValue short_description = 4;
+  GrpcCategoryDetails category = 5;
+  repeated string sub_category_ids = 6;
+  repeated string tags = 7;
+  google.protobuf.StringValue search_keywords = 8;
+  google.protobuf.StringValue brand = 9;
+  GrpcProductStatus status = 10;
+  google.protobuf.Timestamp launch_date = 11;
+  google.protobuf.Timestamp discontinue_date = 12;
+  GrpcLifecycleStage lifecycle_stage = 13;
+  google.protobuf.BoolValue age_restricted = 14;
+  GrpcHazardClass hazard_class = 15;
+  repeated string certifications = 16;
+  google.protobuf.Timestamp created_at = 17;
+  google.protobuf.Timestamp updated_at = 18;
+  google.protobuf.StringValue created_by = 19;
+  google.protobuf.StringValue updated_by = 20;
+  google.protobuf.Int32Value version = 21;
+  repeated ProductInsuranceCoverageDetails insurance_coverages = 22;
+}
+
+message ProductVariantDetails {
+  string id = 1;
+  GrpcProductFamilyDetails family = 2;
+  string name = 3;
+  google.protobuf.StringValue display_name = 4;
+  string sku = 5;
+  google.protobuf.StringValue upc = 6;
+  google.protobuf.StringValue gtin = 7;
+  repeated string barcodes = 8;
+  string brand = 9;
+  google.protobuf.StringValue manufacturer = 10;
+  google.protobuf.StringValue manufacturer_part_number = 11;
+  google.protobuf.StringValue country_of_origin = 12;
+  map<string, string> attributes = 13;
+  google.protobuf.StringValue color = 14;
+  repeated string material = 15;
+  GrpcUnitOfMeasure unit_of_measure = 16;
+  google.protobuf.Int32Value units_per_package = 17;
+  repeated string allergens = 18;
+  repeated string ingredients = 19;
+  repeated string warnings = 20;
+  repeated string instructions = 21;
+  map<string, string> specifications = 22;
+  repeated string compatibility = 23;
+  repeated ProductInsuranceCoverageDetails insurance_coverages = 24;
+  GrpcProductStatus status = 25;
+  google.protobuf.BoolValue is_limited_edition = 26;
+  google.protobuf.StringValue search_keywords = 27;
+  google.protobuf.StringValue seo_url = 28;
+  google.protobuf.StringValue meta_description = 29;
+  google.protobuf.DoubleValue average_rating = 30;
+  google.protobuf.Int32Value review_count = 31;
+  repeated string quality_certifications = 32;
+  google.protobuf.Timestamp created_at = 33;
+  google.protobuf.Timestamp updated_at = 34;
+  google.protobuf.StringValue created_by = 35;
+  google.protobuf.StringValue updated_by = 36;
+  google.protobuf.Int32Value version = 37;
+}
+
+message ProductInsuranceCoverageDetails {
+  string id = 1;
+  string insurance_id = 2;
+  string insurance_name = 3;
+  google.protobuf.StringValue product_family_id = 4;
+  google.protobuf.StringValue product_family_name = 5;
+  google.protobuf.StringValue product_variant_id = 6;
+  google.protobuf.StringValue product_variant_name = 7;
+  GrpcCoverageStatus status = 8;
+  google.protobuf.DoubleValue insurance_price = 9;
+  google.protobuf.DoubleValue client_contribution_percentage = 10;
+  google.protobuf.DoubleValue insurance_coverage_percentage = 11;
+  google.protobuf.BoolValue requires_pre_approval = 12;
+  GrpcApprovalType approval_type = 13;
+  google.protobuf.DoubleValue max_coverage_amount = 14;
+  google.protobuf.DoubleValue min_client_contribution = 15;
+  google.protobuf.DoubleValue max_client_contribution = 16;
+  google.protobuf.Timestamp effective_from = 17;
+  google.protobuf.Timestamp effective_to = 18;
+  google.protobuf.StringValue conditions = 19;
+  google.protobuf.StringValue approval_notes = 20;
+  google.protobuf.Timestamp created_at = 21;
+  google.protobuf.Timestamp updated_at = 22;
+  google.protobuf.StringValue created_by = 23;
+  google.protobuf.StringValue updated_by = 24;
+}

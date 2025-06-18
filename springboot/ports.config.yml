@@ -1,0 +1,74 @@
+# This file defines the ports for each service in both development and Docker environments.
+# It is used to configure the services in a microservices architecture, allowing for easy port management
+# and service communication.
+# custom dev and docker ports for each service
+services:
+  auth-service:
+    dev:
+      rest: 5001
+      grpc: 5101
+    docker:
+      rest: 6001
+      grpc: 6101
+  users-service:
+    dev:
+      rest: 5002
+      grpc: 5102
+    docker:
+      rest: 6002
+      grpc: 6102
+  billing-service:
+    dev:
+      rest: 5003
+      grpc: 5103
+    docker:
+      rest: 6003
+      grpc: 6103
+  medicine-service:
+    dev:
+      rest: 5004
+      grpc: 5104
+    docker:
+      rest: 6004
+      grpc: 6104
+  catalog-service:
+    dev:
+      rest: 5005
+      grpc: 5105
+    docker:
+      rest: 6005
+      grpc: 6105
+  inventory-service:
+    dev:
+      rest: 5007
+      grpc: 5107
+    docker:
+      rest: 6007
+      grpc: 6107
+  gateway-service:
+    dev:
+      rest: 5006
+      grpc: 5106
+    docker:
+      rest: 6006
+      grpc: 6106
+  medicalemr-service:
+    dev:
+      rest: 5008
+      grpc: 5108
+    docker:
+      rest: 6008
+      grpc: 6108
+
+# default dependent services
+  eureka-server:
+    dev:
+      rest: 8761
+    docker:
+      rest: 8761
+  postges-db:
+    dev:
+      port: 5432
+    docker:
+      port: 5432
+ 

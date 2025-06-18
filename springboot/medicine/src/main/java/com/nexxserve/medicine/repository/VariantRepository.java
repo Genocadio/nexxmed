@@ -12,7 +12,7 @@ import java.util.UUID;
 @Repository
 public interface VariantRepository extends JpaRepository<Variant, UUID> {
 
-    @Query("SELECT DISTINCT v FROM Variant v LEFT JOIN FETCH v.generics LEFT JOIN FETCH v.brands WHERE LOWER(v.name) LIKE LOWER(CONCAT('%', :name, '%'))")
+    @Query("SELECT DISTINCT v FROM Variant v LEFT JOIN FETCH v.generics WHERE LOWER(v.name) LIKE LOWER(CONCAT('%', :name, '%'))")
     List<Variant> findByNameContainingIgnoreCase(@Param("name") String name);
 
     @Query("SELECT DISTINCT v FROM Variant v JOIN v.generics g WHERE g.id = :genericId")

@@ -34,7 +34,6 @@ public class UserGrpcService {
 
     // Constants for channel management
     private static final int SHUTDOWN_TIMEOUT_SECONDS = 5;
-    private static final int DEFAULT_GRPC_PORT = 9071;
 
     @CircuitBreaker(name = USER_SERVICE, fallbackMethod = "searchUserFallback")
     @Retry(name = USER_SERVICE)

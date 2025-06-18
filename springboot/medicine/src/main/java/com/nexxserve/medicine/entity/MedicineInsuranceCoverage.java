@@ -25,8 +25,9 @@ public class MedicineInsuranceCoverage {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
-    @Column(name = "insurance_id", nullable = false)
-    private UUID insuranceId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "insurance_id", nullable = false)
+    private Insurance insurance;
 
     @Column(name = "insurance_name", nullable = false, length = 255)
     private String insuranceName;
@@ -62,6 +63,7 @@ public class MedicineInsuranceCoverage {
 
     // Whether this specific medicine requires pre-approval from this insurance
     @Column(nullable = false)
+    @Builder.Default
     private Boolean requiresPreApproval = false;
 
     @Enumerated(EnumType.STRING)

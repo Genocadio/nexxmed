@@ -15,11 +15,11 @@ spring:
         dialect: org.hibernate.dialect.PostgreSQLDialect
 
 server:
-  port: 8085
+  port: 6002
 
 grpc:
   server:
-    port: 9092
+    port: 6102
 
 eureka:
   client:

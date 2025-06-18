@@ -31,6 +31,7 @@ public class CategoryDto {
     @NotNull(message = "Display order is required")
     private Integer displayOrder;
 
+    @NotNull(message = "Active status is required")
     private Boolean isActive;
     private String icon;
     private String description;

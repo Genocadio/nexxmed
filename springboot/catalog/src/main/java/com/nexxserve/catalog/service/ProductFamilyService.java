@@ -6,6 +6,7 @@ import com.nexxserve.catalog.dto.ProductInsuranceCoverageDto;
 import com.nexxserve.catalog.dto.ProductInsuranceCoverageRequestDto;
 import com.nexxserve.catalog.enums.ProductStatus;
 import com.nexxserve.catalog.exception.ProductFamilyNotFoundException;
+import com.nexxserve.catalog.exception.ResourceNotFoundException;
 import com.nexxserve.catalog.mapper.ProductFamilyMapper;
 import com.nexxserve.catalog.mapper.ProductInsuranceCoverageMapper;
 import com.nexxserve.catalog.model.entity.CategoryReference;
@@ -95,7 +96,7 @@ public class ProductFamilyService {
     public ProductFamilyDto findById(UUID id) {
         log.debug("Finding product family with id: {}", id);
         ProductFamily productFamily = productFamilyRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Product family not found with id: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Product family not found with id: " + id));
         return productFamilyMapper.toDto(productFamily);
     }
 

@@ -22,7 +22,6 @@ public class InsuranceCoverageRequestDto {
 
     @NotNull(message = "Insurance ID is required")
     private UUID insuranceId;
-    private String insuranceName;
 
     // Only one of these should be provided
     private UUID genericId;

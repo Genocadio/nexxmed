@@ -13,9 +13,20 @@ spring:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
 
+management:
+  security:
+    enabled: false
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+
+    health:
+      show-details: always
 
 server:
-  port: 8082
+  port: 6001
 
 eureka:
   client:
@@ -28,13 +39,13 @@ eureka:
     instanceId: ${spring.application.name}:${random.uuid}
 
 # Docker service URLs
-user:
-  service:
-    url: http://users-service:8080
-    grpc-port: 9092
-services:
-  list: billing
-  base-url: http://billing-service:8081
+#user:
+#  service:
+#    url: http://users-service:6002
+#    grpc-port: 6102
+#services:
+#  list: billing
+#  base-url: http://billing-service:6003
 
 jwt:
   secret: NWI4eUJFSE1iUWVUaFdtWnE0dDZ3OXpDRkpOY1JmVWpYbjJyNXU4eEFER0thUGRTZ1ZrWQ==

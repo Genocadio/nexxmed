@@ -17,7 +17,7 @@ spring:
         show_sql: true
 
 server:
-    port: 8072
+    port: 5001
 jwt:
   secret: NWI4eUJFSE1iUWVUaFdtWnE0dDZ3OXpDRkpOY1JmVWpYbjJyNXU4eEFER0thUGRTZ1ZrWQ==
   expiration: 86400000
@@ -28,6 +28,15 @@ user:
 services:
     list: billing
     base-url: http://localhost:8080
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      show-details: always
 
 resilience4j:
   circuitbreaker:

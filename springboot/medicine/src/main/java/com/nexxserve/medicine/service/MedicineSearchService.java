@@ -5,9 +5,11 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -34,6 +36,69 @@ public class MedicineSearchService {
         results.put("totalResults", classes.size() + generics.size() + variants.size() + brands.size());
 
         return results;
+    }
+
+    public Map<String, Object> unifiedSearch(String query, List<String> types) {
+        List<MedicineSearchResultDto> results = new ArrayList<>();
+        types = types != null ? types.stream().map(String::toLowerCase).collect(Collectors.toList()) : null;
+
+        // Default behavior: search all types if no specific types provided
+        boolean searchAll = types == null || types.isEmpty();
+        boolean searchVariants = searchAll || types.contains("variant");
+        boolean searchBrands = searchAll || types.contains("brand");
+        boolean searchGenerics = searchAll || types.contains("generic");
+
+        // Search variants
+        if (searchVariants) {
+            List<VariantDto> variants = variantService.searchByName(query);
+            results.addAll(variants.stream()
+                .map(v -> MedicineSearchResultDto.builder()
+                    .id(v.getId())
+                    .name(v.getName())
+                    .description(v.getNotes())
+                    .type("VARIANT")
+                    .form(v.getForm())
+                    .route(v.getRoute())
+                    .strength(v.getStrength())
+                    .build())
+                .toList());
+        }
+
+        // Search brands
+        if (searchBrands) {
+            List<BrandDto> brands = brandService.searchByBrandName(query);
+            results.addAll(brands.stream()
+                .map(b -> MedicineSearchResultDto.builder()
+                    .id(b.getId())
+                    .name(b.getBrandName())
+                    .type("BRAND")
+                    .manufacturer(b.getManufacturer())
+                    .parentId(b.getVariantId())
+                    .additionalInfo(b.getCountry())
+                    .build())
+                .toList());
+        }
+
+        // Search generics
+        if (searchGenerics) {
+            List<GenericDto> generics = genericService.searchByName(query);
+            results.addAll(generics.stream()
+                .map(g -> MedicineSearchResultDto.builder()
+                    .id(g.getId())
+                    .name(g.getName())
+                    .description(g.getDescription())
+                    .type("GENERIC")
+                    .additionalInfo(g.getChemicalName())
+                    .parentId(g.getClassId())
+                    .build())
+                .collect(Collectors.toList()));
+        }
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("results", results);
+        response.put("totalResults", results.size());
+
+        return response;
     }
 
     public Map<String, Object> advancedVariantSearch(String name, String form, String route, String strength) {

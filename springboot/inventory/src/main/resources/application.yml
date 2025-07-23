@@ -1,6 +1,7 @@
 spring:
   application:
     name: inventory
+
   datasource:
     url: jdbc:postgresql://localhost:5432/inventory
     username: postgres
@@ -16,6 +17,11 @@ spring:
         dialect: org.hibernate.dialect.PostgreSQLDialect
         jdbc:
           time_zone: UTC
+
+jwt:
+  secret: ${JWT_SECRET:mySecretKey1234567890abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ}
+  access-token-expiration: 86400
+  refresh-token-expiration: 604800
 
 server:
   port: 5007
@@ -42,3 +48,8 @@ management:
   endpoint:
     health:
       show-details: when-authorized
+
+app:
+  credentials:
+    secret: "YourSecureEncryptionKeyHere123456"  # Must be the same across restarts
+    salt: "5c0744940b5c369b"

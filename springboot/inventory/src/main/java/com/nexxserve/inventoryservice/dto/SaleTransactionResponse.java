@@ -16,6 +16,7 @@ public class SaleTransactionResponse {
     private String patientName;
     private String patientContact;
     private String prescriberName;
+    private String prescriberLicenseNumber;
     private BigDecimal totalPrice;
     private BigDecimal totalInsurancePayment;
     private BigDecimal totalPatientPayment;
@@ -31,7 +32,9 @@ public class SaleTransactionResponse {
         private Integer quantitySold;
         private BigDecimal unitPrice;
         private BigDecimal totalAmount;
+        private String salesnotes;
         private Integer insuranceCoverage;
+        private String insuranceName;
         private BigDecimal insurancePayment;
         private BigDecimal patientPayment;
     }

@@ -1,28 +1,25 @@
 package com.nexxserve.inventoryservice.service;
 
-import com.nexxserve.catalog.grpc.GetProductResponse;
 import com.nexxserve.catalog.grpc.GrpcProductType;
-import com.nexxserve.inventoryservice.dto.CreateStockEntryRequest;
-import com.nexxserve.inventoryservice.dto.StockAlertResponse;
-import com.nexxserve.inventoryservice.dto.StockEntryResponse;
-import com.nexxserve.inventoryservice.entity.StockAlert;
-import com.nexxserve.inventoryservice.entity.StockEntry;
+import com.nexxserve.inventoryservice.dto.stock.CreateStockEntryRequest;
+import com.nexxserve.inventoryservice.dto.stock.StockAlertResponse;
+import com.nexxserve.inventoryservice.dto.stock.StockEntryResponse;
+import com.nexxserve.inventoryservice.entity.inventory.StockAlert;
+import com.nexxserve.inventoryservice.entity.inventory.StockEntry;
 import com.nexxserve.inventoryservice.enums.AlertStatus;
 import com.nexxserve.inventoryservice.enums.AlertType;
 import com.nexxserve.inventoryservice.enums.ProductType;
 import com.nexxserve.inventoryservice.enums.SourceService;
 import com.nexxserve.inventoryservice.exception.MedicineClientException;
-import com.nexxserve.inventoryservice.exception.ProductClientException;
 import com.nexxserve.inventoryservice.exception.ResourceNotFoundException;
-import com.nexxserve.inventoryservice.grpc.client.MedicineGrpcClient;
-import com.nexxserve.inventoryservice.grpc.client.ProductGrpcClient;
+//import com.nexxserve.inventoryservice.grpc.client.MedicineGrpcClient;
+//import com.nexxserve.inventoryservice.grpc.client.ProductGrpcClient;
 import com.nexxserve.inventoryservice.mapper.StockAlertMapper;
 import com.nexxserve.inventoryservice.mapper.StockEntryMapper;
 import com.nexxserve.inventoryservice.repository.StockAlertRepository;
 import com.nexxserve.inventoryservice.repository.StockEntryRepository;
 import com.nexxserve.medicine.grpc.MedicineProto;
 import com.nexxserve.inventoryservice.dto.ProductNameInfo;
-import com.nexxserve.catalog.grpc.ProductProto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -30,7 +27,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import com.nexxserve.inventoryservice.exception.MedicineValidationException;
 
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -43,9 +39,10 @@ public class StockService {
     private final StockAlertRepository stockAlertRepository;
     private final StockEntryMapper stockEntryMapper;
     private final StockAlertMapper stockAlertMapper;
-    private final MedicineGrpcClient medicineGrpcClient;
-    private final ProductGrpcClient productGrpcClient;
+//    private final MedicineGrpcClient medicineGrpcClient;
+//    private final ProductGrpcClient productGrpcClient;
     private final ProductEnrichmentService productEnrichmentService;
+    private final UserService userService;
 
 
     // Default threshold for low stock alerts
@@ -75,36 +72,17 @@ public class StockService {
             throw new IllegalArgumentException("Unsupported product name: " + request.getProductReference().getSourceService());
         }
         // Save stock entry
+        stockEntry.setCreatedBy(userService.getCurrentUserId().toString());
         StockEntry savedEntry = stockEntryRepository.save(stockEntry);
 
         // Check if alerts need to be generated
         checkAndGenerateAlerts(savedEntry);
 
         // Return response
-        StockEntryResponse response= stockEntryMapper.toResponse(savedEntry);
+        StockEntryResponse response = stockEntryMapper.toResponse(savedEntry);
         return productEnrichmentService.enrichStockEntryWithProductData(response);
     }
 
-    private void validateProductExists(CreateStockEntryRequest request) {
-        String referenceId = request.getProductReference().getReferenceId();
-        ProductType productType = request.getProductReference().getProductType();
-
-        if (!productGrpcClient.isChannelReady()) {
-            throw new ProductClientException("Product service is not available");
-        }
-
-        try {
-            GrpcProductType grpcProductType = mapToGrpcProductType(productType);
-            GetProductResponse response = productGrpcClient.getProductByReference(referenceId, grpcProductType);
-
-
-//            log.info("Validated product: {}, type: {}", referenceId, productType);
-        } catch (ProductClientException e) {
-            throw e; // Re-throw client exceptions
-        } catch (Exception e) {
-            throw new ProductClientException("Failed to validate product: " + e.getMessage(), e);
-        }
-    }
 
     private GrpcProductType mapToGrpcProductType(ProductType productType) {
         return switch (productType) {
@@ -115,41 +93,39 @@ public class StockService {
     }
 
 
-
-
     /**
      * Validates that the medicine exists in the medicine service via gRPC
      *
      * @param request the stock entry request
      * @throws MedicineValidationException if the medicine does not exist
-     * @throws MedicineClientException if there's an error communicating with the medicine service
+     * @throws MedicineClientException     if there's an error communicating with the medicine service
      */
-    private void validateMedicineExists(CreateStockEntryRequest request) {
-        String referenceId = request.getProductReference().getReferenceId();
-        ProductType productType = request.getProductReference().getProductType();
-
-        if (!medicineGrpcClient.isChannelReady()) {
-            throw new MedicineClientException("Medicine service is not available");
-        }
-
-        try {
-            MedicineProto.ProductType grpcProductType = mapToGrpcMedicineType(productType);
-            MedicineProto.MedicineResponse response =
-                    medicineGrpcClient.getMedicineByReference(referenceId, grpcProductType);
-
-            if (response == null|| response.getId().isEmpty()) {
-                throw new MedicineValidationException(
-                        "Medicine with reference ID " + referenceId + " and type " + productType + " does not exist"
-                );
-            }
-
-//            log.info("Validated medicine: {}, type: {}", referenceId, productType);
-        } catch (MedicineClientException e) {
-            throw e; // Re-throw client exceptions
-        } catch (Exception e) {
-            throw new MedicineValidationException("Failed to validate medicine: " + e.getMessage(), e);
-        }
-    }
+//    private void validateMedicineExists(CreateStockEntryRequest request) {
+//        String referenceId = request.getProductReference().getReferenceId();
+//        ProductType productType = request.getProductReference().getProductType();
+//
+//        if (!medicineGrpcClient.isChannelReady()) {
+//            throw new MedicineClientException("Medicine service is not available");
+//        }
+//
+//        try {
+//            MedicineProto.ProductType grpcProductType = mapToGrpcMedicineType(productType);
+//            MedicineProto.MedicineResponse response =
+//                    medicineGrpcClient.getMedicineByReference(referenceId, grpcProductType);
+//
+//            if (response == null || response.getId().isEmpty()) {
+//                throw new MedicineValidationException(
+//                        "Medicine with reference ID " + referenceId + " and type " + productType + " does not exist"
+//                );
+//            }
+//
+////            log.info("Validated medicine: {}, type: {}", referenceId, productType);
+//        } catch (MedicineClientException e) {
+//            throw e; // Re-throw client exceptions
+//        } catch (Exception e) {
+//            throw new MedicineValidationException("Failed to validate medicine: " + e.getMessage(), e);
+//        }
+//    }
 
     /**
      * Maps the internal ProductType to the gRPC ProductType

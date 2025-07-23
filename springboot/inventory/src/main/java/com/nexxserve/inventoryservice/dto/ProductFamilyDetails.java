@@ -1,5 +1,6 @@
 package com.nexxserve.inventoryservice.dto;
 
+import com.nexxserve.inventoryservice.dto.Insurance.InsuranceCoverageDetails;
 import lombok.Data;
 
 import java.time.LocalDateTime;

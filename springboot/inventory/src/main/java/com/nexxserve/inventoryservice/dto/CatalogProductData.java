@@ -5,6 +5,8 @@ import lombok.Data;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
+import com.nexxserve.inventoryservice.dto.catalog.ProductFamilyDto;
+import com.nexxserve.inventoryservice.dto.catalog.ProductVariantDto;
 
 @Data
 public class CatalogProductData {
@@ -14,10 +16,7 @@ public class CatalogProductData {
     private boolean success;
     private String errorMessage;
 
-    // Family specific fields
-    private ProductFamilyDetails familyDetails;
-
-    // Variant specific fields
-    private ProductVariantDetails variantDetails;
+    private ProductFamilyDto productFamily;
+    private ProductVariantDto productVariant;
 }
 

@@ -21,3 +21,5 @@ create_db_if_not_exists medicine
 create_db_if_not_exists catalog
 create_db_if_not_exists inventory
 create_db_if_not_exists  medicalemr
+create_db_if_not_exists medadmin
+create_db_if_not_exists cavgobooks

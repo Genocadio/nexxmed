@@ -1,6 +1,6 @@
 package com.nexxserve.inventoryservice.repository;
 
-import com.nexxserve.inventoryservice.entity.StockEntry;
+import com.nexxserve.inventoryservice.entity.inventory.StockEntry;
 import com.nexxserve.inventoryservice.enums.ProductType;
 import com.nexxserve.inventoryservice.enums.SourceService;
 import com.nexxserve.inventoryservice.enums.StockStatus;

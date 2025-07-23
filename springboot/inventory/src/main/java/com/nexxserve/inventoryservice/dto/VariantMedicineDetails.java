@@ -1,5 +1,6 @@
 package com.nexxserve.inventoryservice.dto;
 
+import com.nexxserve.inventoryservice.dto.medicine.GenericReference;
 import lombok.Data;
 
 import java.util.List;

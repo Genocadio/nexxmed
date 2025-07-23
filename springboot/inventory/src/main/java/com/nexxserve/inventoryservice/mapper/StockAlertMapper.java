@@ -1,9 +1,9 @@
 package com.nexxserve.inventoryservice.mapper;
 
 import com.nexxserve.inventoryservice.dto.ProductReference;
-import com.nexxserve.inventoryservice.dto.StockAlertResponse;
-import com.nexxserve.inventoryservice.entity.StockAlert;
-import com.nexxserve.inventoryservice.entity.StockEntry;
+import com.nexxserve.inventoryservice.dto.stock.StockAlertResponse;
+import com.nexxserve.inventoryservice.entity.inventory.StockAlert;
+import com.nexxserve.inventoryservice.entity.inventory.StockEntry;
 import com.nexxserve.inventoryservice.enums.AlertType;
 import org.springframework.stereotype.Component;
 

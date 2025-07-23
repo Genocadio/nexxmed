@@ -2,9 +2,9 @@ package com.nexxserve.inventoryservice.service;
 
 import com.nexxserve.inventoryservice.dto.SaleTransactionRequest;
 import com.nexxserve.inventoryservice.dto.SaleTransactionResponse;
-import com.nexxserve.inventoryservice.entity.SaleItem;
-import com.nexxserve.inventoryservice.entity.SaleTransaction;
-import com.nexxserve.inventoryservice.entity.StockEntry;
+import com.nexxserve.inventoryservice.entity.inventory.SaleItem;
+import com.nexxserve.inventoryservice.entity.inventory.SaleTransaction;
+import com.nexxserve.inventoryservice.entity.inventory.StockEntry;
 import com.nexxserve.inventoryservice.exception.InsufficientStockException;
 import com.nexxserve.inventoryservice.exception.ResourceNotFoundException;
 import com.nexxserve.inventoryservice.repository.SaleTransactionRepository;
@@ -29,6 +29,7 @@ public class SalesService {
 
     private final SaleTransactionRepository saleTransactionRepository;
     private final StockEntryRepository stockEntryRepository;
+    private final UserService userService;
 
     @Transactional
     public SaleTransactionResponse createSaleTransaction(SaleTransactionRequest request) {
@@ -59,11 +60,24 @@ public class SalesService {
                 .paymentMode(request.getPaymentMode())
                 .notes(request.getNotes())
                 .items(new ArrayList<>())
+                .createdBy(userService.getCurrentUserId().toString())
                 .build();
 
         // Add insurance details if present
         if (request.getPatient().getInsurance() != null) {
-            transaction.setInsuranceId(request.getPatient().getInsurance().getId());
+            String insuranceIdStr = request.getPatient().getInsurance().getId();
+            if (!"custom".equals(insuranceIdStr)) {
+                try {
+                    transaction.setInsuranceId(UUID.fromString(insuranceIdStr));
+                } catch (Exception e) {
+                    log.warn("Invalid insurance ID: " + insuranceIdStr);
+                    transaction.setInsuranceId(null); // Ignore if not a valid UUID
+                }
+            } else {
+                log.warn("Insurance ID is custom.");
+                transaction.setInsuranceId(null); // Custom insurance, no ID
+            }
+
             transaction.setInsuranceName(request.getPatient().getInsurance().getName());
             transaction.setInsuranceCoverage(request.getPatient().getInsurance().getCoverage());
             transaction.setInsuranceCardNumber(request.getPatient().getInsurance().getCardNumber());
@@ -75,6 +89,7 @@ public class SalesService {
         transaction.setPrescriberOrganization(request.getPrescriber().getOrganization());
         transaction.setPrescriberContact(request.getPrescriber().getContact());
         transaction.setPrescriberType(request.getPrescriber().getType());
+        transaction.setLicenseNumber(request.getPrescriber().getLicenseNumber());
 
         // Create sale items and update stock quantities
         for (int i = 0; i < request.getItems().size(); i++) {
@@ -84,6 +99,7 @@ public class SalesService {
             SaleItem saleItem = SaleItem.builder()
                     .stockEntry(stockEntry)
                     .quantitySold(itemRequest.getQuantity())
+                    .Salesnotes(itemRequest.getSalesnotes())
                     .unitPrice(itemRequest.getUnitPrice())
                     .insuranceCoverage(itemRequest.getInsuranceCoverage())
                     .insurancePayment(itemRequest.getInsurancePayment())
@@ -152,9 +168,11 @@ public class SalesService {
                         .stockEntryId(item.getStockEntry().getId())
                         .productName(item.getStockEntry().getProductName())
                         .quantitySold(item.getQuantitySold())
+                        .salesnotes(item.getSalesnotes())
                         .unitPrice(item.getUnitPrice())
                         .totalAmount(item.getTotalAmount())
                         .insuranceCoverage(item.getInsuranceCoverage())
+                        .insuranceName(transaction.getInsuranceName())
                         .insurancePayment(item.getInsurancePayment())
                         .patientPayment(item.getPatientPayment())
                         .build())
@@ -166,6 +184,7 @@ public class SalesService {
                 .patientName(transaction.getPatientName())
                 .patientContact(transaction.getPatientContact())
                 .prescriberName(transaction.getPrescriberName())
+                .prescriberLicenseNumber(transaction.getLicenseNumber())
                 .totalPrice(transaction.getTotalPrice())
                 .totalInsurancePayment(transaction.getTotalInsurancePayment())
                 .totalPatientPayment(transaction.getTotalPatientPayment())

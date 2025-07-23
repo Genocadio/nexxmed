@@ -1,6 +1,6 @@
 package com.nexxserve.inventoryservice.repository;
 
-import com.nexxserve.inventoryservice.entity.SaleTransaction;
+import com.nexxserve.inventoryservice.entity.inventory.SaleTransaction;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;

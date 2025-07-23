@@ -1,8 +1,8 @@
 package com.nexxserve.inventoryservice.controller;
 
-import com.nexxserve.inventoryservice.dto.CreateStockEntryRequest;
-import com.nexxserve.inventoryservice.dto.StockAlertResponse;
-import com.nexxserve.inventoryservice.dto.StockEntryResponse;
+import com.nexxserve.inventoryservice.dto.stock.CreateStockEntryRequest;
+import com.nexxserve.inventoryservice.dto.stock.StockAlertResponse;
+import com.nexxserve.inventoryservice.dto.stock.StockEntryResponse;
 import com.nexxserve.inventoryservice.enums.AlertType;
 import com.nexxserve.inventoryservice.enums.ProductType;
 import com.nexxserve.inventoryservice.enums.SourceService;

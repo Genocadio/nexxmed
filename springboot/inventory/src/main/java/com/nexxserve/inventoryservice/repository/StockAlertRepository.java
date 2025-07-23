@@ -1,7 +1,7 @@
 package com.nexxserve.inventoryservice.repository;
 
-import com.nexxserve.inventoryservice.entity.StockAlert;
-import com.nexxserve.inventoryservice.entity.StockEntry;
+import com.nexxserve.inventoryservice.entity.inventory.StockAlert;
+import com.nexxserve.inventoryservice.entity.inventory.StockEntry;
 import com.nexxserve.inventoryservice.enums.AlertStatus;
 import com.nexxserve.inventoryservice.enums.AlertType;
 import org.springframework.data.domain.Page;

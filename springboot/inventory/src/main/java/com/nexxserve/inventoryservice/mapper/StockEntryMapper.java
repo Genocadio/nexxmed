@@ -1,7 +1,11 @@
 package com.nexxserve.inventoryservice.mapper;
 
 import com.nexxserve.inventoryservice.dto.*;
-import com.nexxserve.inventoryservice.entity.StockEntry;
+import com.nexxserve.inventoryservice.dto.stock.CreateStockEntryRequest;
+import com.nexxserve.inventoryservice.dto.stock.StockDetails;
+import com.nexxserve.inventoryservice.dto.stock.StockEntryResponse;
+import com.nexxserve.inventoryservice.dto.stock.StockMetadata;
+import com.nexxserve.inventoryservice.entity.inventory.StockEntry;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
@@ -53,8 +57,8 @@ public class StockEntryMapper {
                         .build())
                 .status(entity.getStatus())
                 .metadata(StockMetadata.builder()
-                        .createdAt(entity.getCreatedAt())
-                        .updatedAt(entity.getUpdatedAt())
+                        .createdAt(entity.getCreatedAtAsLocalDateTime())
+                        .updatedAt(entity.getUpdatedAtAsLocalDateTime())
                         .createdBy(entity.getCreatedBy())
                         .build())
                 .build();

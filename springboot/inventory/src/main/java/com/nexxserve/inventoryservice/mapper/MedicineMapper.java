@@ -1,10 +1,13 @@
 package com.nexxserve.inventoryservice.mapper;
 
 import com.nexxserve.inventoryservice.dto.*;
+import com.nexxserve.inventoryservice.dto.medicine.BrandMedicineDetails;
+import com.nexxserve.inventoryservice.dto.medicine.GenericMedicineDetails;
+import com.nexxserve.inventoryservice.dto.medicine.GenericReference;
+import com.nexxserve.inventoryservice.dto.medicine.MedicineInsuranceCoverage;
 import com.nexxserve.medicine.grpc.MedicineProto;
 import org.springframework.stereotype.Component;
 
-import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -16,41 +19,6 @@ public class MedicineMapper {
 
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSSSS");
 
-    public MedicineData toMedicineData(MedicineProto.MedicineResponse response) {
-        MedicineData data = new MedicineData();
-        data.setId(response.getId());
-        data.setName(response.getName());
-        data.setProductType(response.getProductType().name());
-
-        // Parse datetime strings to LocalDateTime
-        if (!response.getCreatedAt().isEmpty()) {
-            data.setCreatedAt(LocalDateTime.parse(response.getCreatedAt(), DATE_FORMATTER));
-        }
-
-        if (!response.getUpdatedAt().isEmpty()) {
-            data.setUpdatedAt(LocalDateTime.parse(response.getUpdatedAt(), DATE_FORMATTER));
-        }
-
-        // Map specialized fields based on product type
-        if (response.hasGenericDetails()) {
-            data.setGenericDetails(mapGenericDetails(response.getGenericDetails()));
-        }
-
-        if (response.hasBrandDetails()) {
-            data.setBrandDetails(mapBrandDetails(response.getBrandDetails()));
-        }
-
-        if (response.hasVariantDetails()) {
-            data.setVariantDetails(mapVariantDetails(response.getVariantDetails()));
-        }
-
-        // Map insurance coverages
-        data.setInsuranceCoverages(response.getInsuranceCoveragesList().stream()
-            .map(this::mapInsuranceCoverage)
-            .toList());
-
-        return data;
-    }
 
     private GenericMedicineDetails mapGenericDetails(MedicineProto.GenericDetails details) {
         GenericMedicineDetails genericDetails = new GenericMedicineDetails();

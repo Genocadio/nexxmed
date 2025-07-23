@@ -44,7 +44,7 @@ public class SaleTransactionRequest {
     @Data
     @Builder
     public static class InsuranceInfo {
-        private UUID id;
+        private String id;
         private String name;
         private Integer coverage;
         private String cardNumber;
@@ -57,6 +57,7 @@ public class SaleTransactionRequest {
         private String name;
         private String organization;
         private String contact;
+        private String licenseNumber;
         private String type;
     }
 
@@ -69,11 +70,13 @@ public class SaleTransactionRequest {
         @NotNull(message = "Quantity is required")
         private Integer quantity;
 
+        private String salesnotes;
+
         private BigDecimal unitPrice;
         private Integer insuranceCoverage;
         private BigDecimal insurancePayment;
         private BigDecimal patientPayment;
-        private UUID insuranceId;
+        private String insuranceId;
         private String insuranceName;
     }
 }

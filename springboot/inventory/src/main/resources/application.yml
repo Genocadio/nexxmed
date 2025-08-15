@@ -1,4 +1,15 @@
 spring:
+  task:
+    scheduling:
+      pool:
+        size: 5
+  web:
+    resources:
+      static-locations: classpath:/static/
+      add-mappings: true
+      cache:
+        cachecontrol:
+          max-age: 3600 # 1 hour for most static resources
   application:
     name: inventory
 
@@ -25,8 +36,6 @@ jwt:
 
 server:
   port: 5007
-  servlet:
-    context-path: /inventory
 
 logging:
   level:
@@ -50,6 +59,16 @@ management:
       show-details: when-authorized
 
 app:
+  report:
+    retry:
+      interval: 60000
+      max-retries: 5
+    cleanup:
+      cron: "0 0 2 * * *"
+  connectivity:
+    check:
+      urls: https://www.google.com,https://www.cloudflare.com,https://httpbin.org/status/200
+      timeout: 5000
   credentials:
     secret: "YourSecureEncryptionKeyHere123456"  # Must be the same across restarts
     salt: "5c0744940b5c369b"

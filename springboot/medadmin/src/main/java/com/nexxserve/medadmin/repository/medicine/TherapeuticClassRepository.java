@@ -1,6 +1,8 @@
 package com.nexxserve.medadmin.repository.medicine;
 
 import com.nexxserve.medadmin.entity.medicine.TherapeuticClass;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -27,4 +29,9 @@ public interface TherapeuticClassRepository extends JpaRepository<TherapeuticCla
     List<TherapeuticClass> findCreatedAfter(@Param("lastSyncTime") Instant lastSyncTime);
 
     Optional<TherapeuticClass> findByName(String name);
+
+    @Query("SELECT tc FROM TherapeuticClass tc WHERE tc.syncVersion > :lastSyncVersion ORDER BY tc.syncVersion ASC")
+    Page<TherapeuticClass> findBySyncVersionGreaterThan(
+            @Param("lastSyncVersion") Double lastSyncVersion,
+            Pageable pageable);
 }

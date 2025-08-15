@@ -2,6 +2,8 @@ package com.nexxserve.inventoryservice.service;
 
 import com.nexxserve.inventoryservice.dto.SaleTransactionRequest;
 import com.nexxserve.inventoryservice.dto.SaleTransactionResponse;
+import com.nexxserve.inventoryservice.dto.admin.InventoryReportDTO;
+import com.nexxserve.inventoryservice.dto.admin.UserReportDTO;
 import com.nexxserve.inventoryservice.entity.inventory.SaleItem;
 import com.nexxserve.inventoryservice.entity.inventory.SaleTransaction;
 import com.nexxserve.inventoryservice.entity.inventory.StockEntry;
@@ -9,6 +11,7 @@ import com.nexxserve.inventoryservice.exception.InsufficientStockException;
 import com.nexxserve.inventoryservice.exception.ResourceNotFoundException;
 import com.nexxserve.inventoryservice.repository.SaleTransactionRepository;
 import com.nexxserve.inventoryservice.repository.StockEntryRepository;
+import com.nexxserve.inventoryservice.service.admin.RemoteReportService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -30,6 +33,7 @@ public class SalesService {
     private final SaleTransactionRepository saleTransactionRepository;
     private final StockEntryRepository stockEntryRepository;
     private final UserService userService;
+    private final RemoteReportService remoteReportService;
 
     @Transactional
     public SaleTransactionResponse createSaleTransaction(SaleTransactionRequest request) {
@@ -116,9 +120,34 @@ public class SalesService {
         // Save transaction
         SaleTransaction savedTransaction = saleTransactionRepository.save(transaction);
 
+
+        try {
+            for (SaleItem item : savedTransaction.getItems()) {
+                InventoryReportDTO dto = new InventoryReportDTO();
+                dto.setTransactionId(savedTransaction.getId().toString());
+                dto.setProductType(item.getStockEntry().getProductType());
+                dto.setProductId(item.getStockEntry().getReferenceId());
+                dto.setAction("SALE");
+                dto.setQuantity(item.getQuantitySold());
+                dto.setSellingPrice(item.getUnitPrice().doubleValue());
+                dto.setInsuranceName(savedTransaction.getInsuranceName());
+                dto.setInsuranceId(savedTransaction.getInsuranceId() != null ? savedTransaction.getInsuranceId().toString() : null);
+                dto.setCoveragePercentage(savedTransaction.getInsuranceCoverage());
+                dto.setDoneBy(savedTransaction.getCreatedBy());
+                dto.setDoneAt(savedTransaction.getTransactionDate());
+                // Set other fields as needed
+                remoteReportService.sendInventoryReport(dto);
+            }
+            log.info("Sent inventory report(s) for sale transaction {}", savedTransaction.getId());
+        } catch (Exception e) {
+            log.error("Failed to send inventory report for sale transaction {}: {}", savedTransaction.getId(), e.getMessage());
+        }
+
         // Map to response
         return mapToResponse(savedTransaction);
     }
+
+
 
     @Transactional(readOnly = true)
     public SaleTransactionResponse getSaleTransaction(UUID id) {

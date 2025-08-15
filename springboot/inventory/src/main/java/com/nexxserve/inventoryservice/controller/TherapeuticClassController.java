@@ -12,7 +12,7 @@ import java.util.List;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/classes")
+@RequestMapping("/api/classes")
 @RequiredArgsConstructor
 public class TherapeuticClassController {
 

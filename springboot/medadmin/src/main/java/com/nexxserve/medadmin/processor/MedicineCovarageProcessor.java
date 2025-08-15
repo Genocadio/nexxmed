@@ -2,7 +2,7 @@ package com.nexxserve.medadmin.processor;
 
 import com.nexxserve.medadmin.dto.sync.MedicineInsuranceCoverageSyncData;
 import com.nexxserve.medadmin.dto.sync.SyncSessionResponse;
-import com.nexxserve.medadmin.service.sync.MedicineInsuranceCoverageSyncService;
+import com.nexxserve.medadmin.service.sync.in.MedicineInsuranceCoverageSyncInService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -11,7 +11,7 @@ import org.springframework.stereotype.Component;
 @Slf4j
 @RequiredArgsConstructor
 public class MedicineCovarageProcessor extends BaseDataProcessor<MedicineInsuranceCoverageSyncData> {
-    private final MedicineInsuranceCoverageSyncService syncService;
+    private final MedicineInsuranceCoverageSyncInService syncService;
 
     @Override
     protected String getExpectedStage() {

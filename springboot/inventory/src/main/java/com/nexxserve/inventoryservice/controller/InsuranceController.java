@@ -16,7 +16,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 @RestController
-@RequestMapping("insurances")
+@RequestMapping("/api/insurances")
 public class InsuranceController {
 
     private final InsuranceService insuranceService;

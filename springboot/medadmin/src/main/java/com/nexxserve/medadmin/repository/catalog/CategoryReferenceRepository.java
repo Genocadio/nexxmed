@@ -1,6 +1,8 @@
 package com.nexxserve.medadmin.repository.catalog;
 
 import com.nexxserve.medadmin.entity.catalog.CategoryReference;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -34,4 +36,8 @@ public interface CategoryReferenceRepository extends JpaRepository<CategoryRefer
 
     @Query("SELECT c FROM CategoryReference c WHERE c.createdAt > :lastSyncTime ORDER BY c.createdAt ASC")
     List<CategoryReference> findCreatedAfter(@Param("lastSyncTime") Instant lastSyncTime);
+
+    @Query("SELECT c FROM CategoryReference c WHERE c.syncVersion > :lastSyncVersion ORDER BY c.syncVersion ASC")
+    Page<CategoryReference> findBySyncVersionGreaterThan(
+            @Param("lastSyncVersion") Double lastSyncVersion, Pageable pageable);
 }

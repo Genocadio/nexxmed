@@ -37,7 +37,7 @@ public class ClientActivationAspect {
     public void checkClientActivationForClass(JoinPoint joinPoint, RequireClientActivation requireClientActivation) {
         log.debug("Checking client activation for class method: {}", joinPoint.getSignature().getName());
 
-        if (clientService.isClientActivated()) {
+        if (!clientService.isClientActivated()) {
             log.warn("Access denied to class method {} - client not activated", joinPoint.getSignature().getName());
             throw new ResponseStatusException(
                     HttpStatus.FORBIDDEN,

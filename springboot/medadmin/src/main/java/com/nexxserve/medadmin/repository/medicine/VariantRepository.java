@@ -1,6 +1,8 @@
 package com.nexxserve.medadmin.repository.medicine;
 
 import com.nexxserve.medadmin.entity.medicine.Variant;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -36,4 +38,9 @@ public interface VariantRepository extends JpaRepository<Variant, UUID> {
 
     @Query("SELECT v FROM Variant v WHERE v.createdAt > :timestamp")
     List<Variant> findCreatedAfter(@Param("timestamp") Instant timestamp);
+
+    @Query("SELECT v FROM Variant v LEFT JOIN FETCH v.generics WHERE v.syncVersion > :lastSyncVersion ORDER BY v.syncVersion ASC")
+    Page<Variant> findBySyncVersionGreaterThan(
+            @Param("lastSyncVersion") Double lastSyncVersion,
+            Pageable pageable);
 }

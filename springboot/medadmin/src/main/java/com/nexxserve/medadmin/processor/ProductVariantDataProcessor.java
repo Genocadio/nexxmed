@@ -2,7 +2,7 @@ package com.nexxserve.medadmin.processor;
 
 import com.nexxserve.medadmin.dto.sync.ProductVariantSyncData;
 import com.nexxserve.medadmin.dto.sync.SyncSessionResponse;
-import com.nexxserve.medadmin.service.sync.ProductVariantSyncService;
+import com.nexxserve.medadmin.service.sync.in.ProductVariantSyncInService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -11,7 +11,7 @@ import org.springframework.stereotype.Component;
 @Component
 @RequiredArgsConstructor
 public class ProductVariantDataProcessor extends  BaseDataProcessor<ProductVariantSyncData> {
-    private final ProductVariantSyncService productVariantSyncService;
+    private final ProductVariantSyncInService productVariantSyncInService;
     @Override
     protected String getExpectedStage() {
         return "PRODUCT_VARIANTS";
@@ -34,7 +34,7 @@ public class ProductVariantDataProcessor extends  BaseDataProcessor<ProductVaria
 
     @Override
     protected void processSingleRecord(ProductVariantSyncData syncData) {
-        productVariantSyncService.saveProductVariantFromSync(syncData);
+        productVariantSyncInService.saveProductVariantFromSync(syncData);
     }
     public void processProductVariantData(SyncSessionResponse response) {
         log.info("Starting product variant data process sync...");

@@ -2,7 +2,7 @@ package com.nexxserve.medadmin.processor;
 
 import com.nexxserve.medadmin.dto.sync.GenericSyncData;
 import com.nexxserve.medadmin.dto.sync.SyncSessionResponse;
-import com.nexxserve.medadmin.service.sync.GenericSyncService;
+import com.nexxserve.medadmin.service.sync.in.GenericSyncInService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -13,7 +13,7 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class GenericDataProcessor extends BaseDataProcessor<GenericSyncData> {
 
-    private final GenericSyncService genericSyncService;
+    private final GenericSyncInService genericSyncInService;
 
     @Override
     protected String getExpectedStage() {
@@ -37,7 +37,7 @@ public class GenericDataProcessor extends BaseDataProcessor<GenericSyncData> {
 
     @Override
     protected void processSingleRecord(GenericSyncData syncData) {
-        genericSyncService.saveGenericFromSync(syncData);
+        genericSyncInService.saveGenericFromSync(syncData);
     }
 
     public void processGenercisData(SyncSessionResponse response) {

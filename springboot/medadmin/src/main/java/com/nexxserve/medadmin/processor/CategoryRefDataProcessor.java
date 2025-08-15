@@ -2,10 +2,9 @@ package com.nexxserve.medadmin.processor;
 
 import com.nexxserve.medadmin.dto.sync.CategoryReferenceSyncData;
 import com.nexxserve.medadmin.dto.sync.SyncSessionResponse;
-import com.nexxserve.medadmin.service.sync.CategoryReferenceSyncService;
+import com.nexxserve.medadmin.service.sync.in.CategoryReferenceSyncInService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -13,7 +12,7 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class CategoryRefDataProcessor extends BaseDataProcessor<CategoryReferenceSyncData> {
 
-    private final CategoryReferenceSyncService service;
+    private final CategoryReferenceSyncInService service;
 
     @Override
     protected String getExpectedStage() {

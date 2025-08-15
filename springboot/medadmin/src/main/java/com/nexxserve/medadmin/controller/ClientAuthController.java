@@ -1,16 +1,23 @@
 package com.nexxserve.medadmin.controller;
 
+import com.nexxserve.medadmin.dto.request.ActivateClientRequest;
+import com.nexxserve.medadmin.dto.request.CommandRequestDto;
 import com.nexxserve.medadmin.dto.request.CreateClientRequest;
+import com.nexxserve.medadmin.dto.request.RefreshTokenRequest;
+import com.nexxserve.medadmin.dto.response.ActivateClientResponse;
+import com.nexxserve.medadmin.dto.response.CommandResponseDto;
 import com.nexxserve.medadmin.dto.response.CreateClientResponse;
-import com.nexxserve.medadmin.enums.ClientStatus;
+import com.nexxserve.medadmin.dto.response.RefreshTokenResponse;
+import com.nexxserve.medadmin.security.SecurityUtils;
 import com.nexxserve.medadmin.service.ClientService;
+import com.nexxserve.medadmin.service.admin.CommandService;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
+
 
 @RestController
 @RequestMapping("/api/client")
@@ -19,6 +26,9 @@ public class ClientAuthController {
     @Autowired
     private ClientService clientService;
 
+    @Autowired
+    private CommandService commandService;
+
 
     @GetMapping
     public ResponseEntity<List<CreateClientResponse>> getAllClients() {
@@ -26,31 +36,12 @@ public class ClientAuthController {
         return ResponseEntity.ok(clients);
     }
 
-    @PostMapping("/check-activation")
-    public ResponseEntity<Map<String, Object>> checkActivation(@RequestBody Map<String, String> request) {
-        String clientId = request.get("clientId");
-        String password = request.get("password");
 
-        if (clientService.authenticateClient(clientId, password).isPresent()) {
-            ClientStatus status = clientService.getClientStatus(clientId);
-            Map<String, Object> response = new HashMap<>();
-            response.put("clientId", clientId);
-            response.put("status", status);
-            response.put("activated", status == ClientStatus.ACTIVE);
-
-            if (status == ClientStatus.ACTIVE) {
-                String token = clientService.generateTokenForClient(clientId, password);
-                response.put("token", token);
-                response.put("message", "Client is activated. Token generated.");
-            } else {
-                response.put("message", "Client is not yet activated. Please wait for admin approval.");
-            }
-
-            return ResponseEntity.ok(response);
-        }
-
-        return ResponseEntity.badRequest()
-                .body(Map.of("error", "Invalid client credentials"));
+    @PostMapping("/command")
+    public ResponseEntity<CommandResponseDto> sendCommand(
+            @RequestBody @Valid CommandRequestDto requestDto) {
+        CommandResponseDto response = commandService.sendCommand(requestDto);
+        return ResponseEntity.ok(response);
     }
 
     @PostMapping
@@ -60,37 +51,43 @@ public class ClientAuthController {
 
     }
 
-    @PostMapping("/refresh-token")
-    public ResponseEntity<Map<String, Object>> refreshToken(@RequestHeader("Authorization") String authHeader) {
-        String token = authHeader.replace("Bearer ", "");
-        String newToken = clientService.refreshToken(token);
+    @PostMapping("/activate")
+    public ResponseEntity<ActivateClientResponse> activateClient(@RequestBody @Valid  ActivateClientRequest request, HttpServletRequest httpServletRequest) {
+        if (request.getClientId() == null || request.getClientId().isEmpty()) {
+            throw new IllegalArgumentException("Client ID is required for activation.");
+        }
 
-        Map<String, Object> response = new HashMap<>();
-        if (newToken != null) {
-            response.put("token", newToken);
-            response.put("message", "Token refreshed successfully");
+        try {
+            String remoteAddress = httpServletRequest.getRemoteAddr();
+            String fullAddress = remoteAddress + ":5007" ;
+            ActivateClientResponse response = clientService.activateClient(request, fullAddress);
             return ResponseEntity.ok(response);
-        } else {
-            response.put("error", "Unable to refresh token. Token may be expired or invalid.");
-            return ResponseEntity.badRequest().body(response);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(new ActivateClientResponse("", "","Activation failed: " + e.getMessage()));
         }
     }
 
-    @PostMapping("/get-token")
-    public ResponseEntity<Map<String, Object>> getToken(@RequestBody Map<String, String> request) {
-        String clientId = request.get("clientId");
-        String password = request.get("password");
+    @PostMapping("/refresh-token")
+    public ResponseEntity<RefreshTokenResponse> refreshToken(
+            @RequestHeader("RefreshToken") String refreshToken,
+            @Valid @RequestBody RefreshTokenRequest request,
+            HttpServletRequest httpServletRequest) {
 
-        String token = clientService.generateTokenForClient(clientId, password);
-        Map<String, Object> response = new HashMap<>();
-
-        if (token != null) {
-            response.put("token", token);
-            response.put("message", "Token generated successfully");
-            return ResponseEntity.ok(response);
-        } else {
-            response.put("error", "Unable to generate token. Client may not be activated or credentials are invalid.");
-            return ResponseEntity.badRequest().body(response);
+        String clientIdFromToken = SecurityUtils.getCurrentClientId();
+        if (clientIdFromToken == null || !clientIdFromToken.equals(request.getClientId())) {
+            return ResponseEntity.status(403)
+                    .body(new RefreshTokenResponse(null, null, "Client ID mismatch or unauthorized"));
         }
+        String remoteAddress = httpServletRequest.getRemoteAddr();
+        String fullAddress = remoteAddress + ":5007";
+
+        RefreshTokenResponse response = clientService.handleRefreshToken(clientIdFromToken, fullAddress);
+        if ("Subscription expired".equals(response.getMessage())) {
+            return ResponseEntity.status(403).body(response);
+        }
+        if (response.getAccessToken() == null) {
+            return ResponseEntity.status(401).body(response);
+        }
+        return ResponseEntity.ok(response);
     }
 }

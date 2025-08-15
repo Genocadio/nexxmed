@@ -1,5 +1,6 @@
 package com.nexxserve.inventoryservice.service;
 
+import com.nexxserve.inventoryservice.dto.admin.UserReportDTO;
 import com.nexxserve.inventoryservice.dto.user.*;
 import com.nexxserve.inventoryservice.enums.Role;
 import com.nexxserve.inventoryservice.entity.user.User;
@@ -28,6 +29,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import com.nexxserve.inventoryservice.service.admin.RemoteReportService;
 
 import java.time.LocalDateTime;
 import java.util.Optional;
@@ -45,6 +47,7 @@ public class UserService implements UserDetailsService {
     @Lazy
     private final AuthenticationManager authenticationManager;
     private final UserMapper userMapper;
+    private final RemoteReportService remoteReportService;
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
@@ -148,6 +151,22 @@ public class UserService implements UserDetailsService {
 
         user = userRepository.save(user);
 
+        try {
+            UserReportDTO dto = new UserReportDTO();
+            dto.setUserId(String.valueOf(user.getId()));
+            dto.setEmail(user.getEmail());
+            dto.setPhoneNumber(user.getPhoneNumber());
+            dto.setFirstName(user.getFirstName());
+            dto.setLastName(user.getLastName());
+            dto.setRoles(user.getRoles());
+            dto.setStatus(user.getStatus());
+            dto.setAction("CREATED");
+//            dto.getCreatedAt(user.getCreatedAt());
+            remoteReportService.sendUserReport(dto);
+            log.info("Sent user report for new user {}", user.getId());
+        } catch (Exception e) {
+            log.error("Failed to send user report for new user {}: {}", user.getId(), e.getMessage());
+        }
         // Generate tokens
         String accessToken = jwtService.generateAccessToken(user, user.getId());
         String refreshToken = jwtService.generateRefreshToken(user, user.getId());

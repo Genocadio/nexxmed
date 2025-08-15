@@ -54,6 +54,40 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(errorResponse, HttpStatus.FORBIDDEN);
     }
 
+
+    @ExceptionHandler(org.springframework.dao.DataIntegrityViolationException.class)
+    public ResponseEntity<CustomErrorResponse> handleDataIntegrityViolationException(
+            org.springframework.dao.DataIntegrityViolationException ex, WebRequest request) {
+
+        String message = "Operation failed due to data constraints";
+
+        if (ex.getCause() instanceof org.hibernate.exception.ConstraintViolationException) {
+            org.hibernate.exception.ConstraintViolationException cve =
+                (org.hibernate.exception.ConstraintViolationException) ex.getCause();
+
+            String sqlException = cve.getSQLException().getMessage();
+
+            if (sqlException != null) {
+                if (sqlException.contains("violates foreign key constraint")) {
+                    message = "Cannot delete this record because it is referenced by other data";
+                } else if (sqlException.contains("duplicate key") || sqlException.contains("unique constraint")) {
+                    message = "A record with this information already exists";
+                } else if (sqlException.contains("not-null constraint")) {
+                    message = "Required fields cannot be empty";
+                }
+            }
+        }
+
+        CustomErrorResponse errorResponse = new CustomErrorResponse(
+                LocalDateTime.now(),
+                HttpStatus.CONFLICT.value(),
+                "Conflict",
+                message,
+                request.getDescription(false)
+        );
+
+        return new ResponseEntity<>(errorResponse, HttpStatus.CONFLICT);
+    }
     @ExceptionHandler(UserAlreadyExistsException.class)
     public ResponseEntity<CustomErrorResponse> handleUserAlreadyExistsException(UserAlreadyExistsException ex, WebRequest request) {
         CustomErrorResponse errorResponse = new CustomErrorResponse(

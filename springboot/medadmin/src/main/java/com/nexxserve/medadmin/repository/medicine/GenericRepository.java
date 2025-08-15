@@ -1,6 +1,8 @@
 package com.nexxserve.medadmin.repository.medicine;
 
 import com.nexxserve.medadmin.entity.medicine.Generic;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -26,4 +28,9 @@ public interface GenericRepository extends JpaRepository<Generic, UUID> {
 
     @Query("SELECT g FROM Generic g WHERE g.createdAt > :timestamp")
     List<Generic> findCreatedAfter(@Param("timestamp") Instant timestamp);
+
+    @Query("SELECT g FROM Generic g LEFT JOIN FETCH g.therapeuticClass WHERE g.syncVersion > :lastSyncVersion ORDER BY g.syncVersion ASC")
+    Page<Generic> findBySyncVersionGreaterThan(
+            @Param("lastSyncVersion") Double lastSyncVersion,
+            Pageable pageable);
 }

@@ -2,7 +2,7 @@ package com.nexxserve.medadmin.processor;
 
 import com.nexxserve.medadmin.dto.sync.ProductFamilySyncData;
 import com.nexxserve.medadmin.dto.sync.SyncSessionResponse;
-import com.nexxserve.medadmin.service.sync.ProductFamilySyncService;
+import com.nexxserve.medadmin.service.sync.in.ProductFamilySyncInService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -12,7 +12,7 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class ProductFamilyDataProcessor extends BaseDataProcessor<ProductFamilySyncData> {
 
-    private final ProductFamilySyncService productFamilySyncService;
+    private final ProductFamilySyncInService productFamilySyncInService;
 
     @Override
     protected String getExpectedStage() {
@@ -36,7 +36,7 @@ public class ProductFamilyDataProcessor extends BaseDataProcessor<ProductFamilyS
 
     @Override
     protected void processSingleRecord(ProductFamilySyncData syncData) {
-        productFamilySyncService.saveProductFamilyFromSync(syncData);
+        productFamilySyncInService.saveProductFamilyFromSync(syncData);
     }
     public void processProductFamilyData(SyncSessionResponse response) {
         log.info("Starting product family data process sync...");

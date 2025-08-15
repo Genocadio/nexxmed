@@ -2,7 +2,7 @@ package com.nexxserve.medadmin.processor;
 
 import com.nexxserve.medadmin.dto.sync.SyncSessionResponse;
 import com.nexxserve.medadmin.dto.sync.TherapeuticClassSyncData;
-import com.nexxserve.medadmin.service.sync.TherapeuticClassSyncService;
+import com.nexxserve.medadmin.service.sync.in.TherapeuticClassSyncInService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -13,7 +13,7 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class TherapeuticClassDataProcessor extends BaseDataProcessor<TherapeuticClassSyncData> {
 
-    private final TherapeuticClassSyncService therapeuticClassSyncService;
+    private final TherapeuticClassSyncInService therapeuticClassSyncInService;
 
     @Override
     protected String getExpectedStage() {
@@ -37,7 +37,7 @@ public class TherapeuticClassDataProcessor extends BaseDataProcessor<Therapeutic
 
     @Override
     protected void processSingleRecord(TherapeuticClassSyncData syncData) {
-        therapeuticClassSyncService.saveTherapeuticClassFromSync(syncData);
+        therapeuticClassSyncInService.saveTherapeuticClassFromSync(syncData);
     }
 
     public void processTherapeuticClassesData(SyncSessionResponse response) {

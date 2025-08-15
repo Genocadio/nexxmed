@@ -1,5 +1,6 @@
 package com.nexxserve.medadmin.dto.sync;
 
+import com.nexxserve.medadmin.entity.medicine.Brand;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -21,4 +22,30 @@ public class BrandSyncData {
     private Instant createdAt;
     private Instant updatedAt;
     private Double syncVersion;
+
+    public static BrandSyncData fromEntity(Brand entity) {
+        return BrandSyncData.builder()
+                .id(entity.getId())
+                .variantId(entity.getVariant() != null ? entity.getVariant().getId() : null)
+                .brandName(entity.getBrandName())
+                .manufacturer(entity.getManufacturer())
+                .country(entity.getCountry())
+                .createdAt(entity.getCreatedAt())
+                .updatedAt(entity.getUpdatedAt())
+                .syncVersion(entity.getSyncVersion())
+                .build();
+    }
+    public Brand toEntity() {
+        Brand brand = new Brand();
+        brand.setId(this.id);
+        brand.setBrandName(this.brandName);
+        brand.setManufacturer(this.manufacturer);
+        brand.setCountry(this.country);
+        brand.setCreatedAt(this.createdAt);
+        brand.setUpdatedAt(this.updatedAt);
+        brand.setSyncVersion(this.syncVersion);
+
+        return brand;
+    }
+
 }

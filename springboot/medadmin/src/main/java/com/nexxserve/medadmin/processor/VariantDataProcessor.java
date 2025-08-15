@@ -2,7 +2,7 @@ package com.nexxserve.medadmin.processor;
 
 import com.nexxserve.medadmin.dto.sync.SyncSessionResponse;
 import com.nexxserve.medadmin.dto.sync.VariantSyncData;
-import com.nexxserve.medadmin.service.sync.VariantSyncService;
+import com.nexxserve.medadmin.service.sync.in.VariantSyncInService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -12,7 +12,7 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class VariantDataProcessor extends  BaseDataProcessor<VariantSyncData> {
 
-    private final VariantSyncService syncService;
+    private final VariantSyncInService syncService;
 
     @Override
     protected String getExpectedStage() {

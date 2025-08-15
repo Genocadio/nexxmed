@@ -1,6 +1,8 @@
 package com.nexxserve.medadmin.repository.medicine;
 
 import com.nexxserve.medadmin.entity.medicine.Brand;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -26,4 +28,9 @@ public interface BrandRepository extends JpaRepository<Brand, UUID> {
 
     @Query("SELECT b FROM Brand b WHERE b.createdAt > :timestamp")
     List<Brand> findCreatedAfter(@Param("timestamp") Instant timestamp);
+
+    @Query("SELECT b FROM Brand b LEFT JOIN FETCH b.variant WHERE b.syncVersion > :lastSyncVersion ORDER BY b.syncVersion ASC")
+    Page<Brand> findBySyncVersionGreaterThan(
+            @Param("lastSyncVersion") Double lastSyncVersion,
+            Pageable pageable);
 }

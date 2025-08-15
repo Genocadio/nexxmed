@@ -1,5 +1,6 @@
 package com.nexxserve.medadmin.dto.sync;
 
+import com.nexxserve.medadmin.entity.medicine.Variant;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -28,4 +29,40 @@ public class VariantSyncData {
     private Instant createdAt;
     private Instant updatedAt;
     private List<UUID> genericIds;
+
+
+    public static VariantSyncData fromEntity(Variant entity) {
+        return VariantSyncData.builder()
+                .id(entity.getId())
+                .name(entity.getName())
+                .tradeName(entity.getTradeName())
+                .form(entity.getForm())
+                .route(entity.getRoute())
+                .strength(entity.getStrength())
+                .concentration(entity.getConcentration())
+                .packaging(entity.getPackaging())
+                .notes(entity.getNotes())
+                .syncVersion(entity.getSyncVersion())
+                .createdAt(entity.getCreatedAt())
+                .updatedAt(entity.getUpdatedAt())
+                .genericIds(entity.getGenerics() != null ? entity.getGenerics().stream().map(g -> g.getId()).toList() : null)
+                .build();
+    }
+    public Variant toEntity() {
+        Variant variant = new Variant();
+        variant.setId(this.id);
+        variant.setName(this.name);
+        variant.setTradeName(this.tradeName);
+        variant.setForm(this.form);
+        variant.setRoute(this.route);
+        variant.setStrength(this.strength);
+        variant.setConcentration(this.concentration);
+        variant.setPackaging(this.packaging);
+        variant.setNotes(this.notes);
+        variant.setSyncVersion(this.syncVersion);
+        variant.setCreatedAt(this.createdAt);
+        variant.setUpdatedAt(this.updatedAt);
+
+        return variant;
+    }
 }

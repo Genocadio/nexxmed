@@ -3,6 +3,7 @@ package com.nexxserve.medadmin.service.sync.in;
 import com.nexxserve.medadmin.dto.sync.SyncSessionResponse;
 import com.nexxserve.medadmin.entity.sync.SyncSession;
 import com.nexxserve.medadmin.processor.*;
+import com.nexxserve.medadmin.repository.clients.ClientRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -20,7 +21,7 @@ import java.util.concurrent.TimeUnit;
 public class SyncClient {
 
     private final RestTemplate restTemplate;
-    private static final String BASE_URL = "http://localhost:5007/inventory/api/session";
+    private final ClientRepository clientRepository;
     private final InsuranceDataProcessor insuranceDataProcessor;
     private final TherapeuticClassDataProcessor therapeuticClassDataProcessor;
     private final GenericDataProcessor genericDataProcessor;
@@ -42,20 +43,23 @@ public class SyncClient {
     public boolean performCompleteSync(String deviceId, Double lastSyncVersion) {
         log.info("Starting complete sync for device: {}", deviceId);
         try {
-            List<SyncSession> activeSessions = getActiveSessionsForDevice(deviceId);
+            String baseUrl = getBaseUrlFromClient(deviceId);
+
+            List<SyncSession> activeSessions = getActiveSessionsForDevice(baseUrl, deviceId);
             if (!activeSessions.isEmpty()) {
                 log.warn("Device {} already has active session: {}",
                         deviceId, activeSessions.get(0).getSessionId());
                 return false;
             }
-            SyncSession session = startSyncSession(deviceId, lastSyncVersion);
+
+            SyncSession session = startSyncSession(baseUrl, deviceId, lastSyncVersion);
             if (session == null) {
                 log.error("Failed to start sync session for device: {}", deviceId);
                 return false;
             }
 
             log.info("Started sync session {} for device {}", session.getSessionId(), deviceId);
-            return processSyncSession(session.getSessionId());
+            return processSyncSession(baseUrl, session.getSessionId());
 
         } catch (Exception e) {
             log.error("Complete sync failed for device: {}", deviceId, e);
@@ -66,34 +70,47 @@ public class SyncClient {
     /**
      * Resume an interrupted sync session
      */
-    public boolean resumeSync(String sessionId) {
-        log.info("Resuming sync session: {}", sessionId);
+    public boolean resumeSync(String deviceId, String sessionId) {
+        log.info("Resuming sync session: {} for device: {}", sessionId, deviceId);
 
         try {
-            SyncSession session = resumeSyncSession(sessionId);
+            String baseUrl = getBaseUrlFromClient(deviceId);
+            SyncSession session = resumeSyncSession(baseUrl, sessionId);
             if (session == null) {
                 log.error("Failed to resume sync session: {}", sessionId);
                 return false;
             }
-            return processSyncSession(sessionId);
+            return processSyncSession(baseUrl, sessionId);
 
         } catch (Exception e) {
-            log.error("Failed to resume sync session: {}", sessionId, e);
+            log.error("Failed to resume sync session: {} for device: {}", sessionId, deviceId, e);
             return false;
         }
+    }
+
+    private String getBaseUrlFromClient(String deviceId) {
+        return clientRepository.findByClientId(deviceId)
+                .map(client -> {
+                    String baseUrl = client.getBaseUrl();
+                    // Add http:// only if not already present
+                    return baseUrl.startsWith("http://") || baseUrl.startsWith("https://")
+                            ? baseUrl
+                            : "http://" + baseUrl;
+                })
+                .orElseThrow(() -> new RuntimeException("Client not found with device ID: " + deviceId));
     }
 
     /**
      * Process a sync session until completion
      */
-    private boolean processSyncSession(String sessionId) {
+    private boolean processSyncSession(String baseUrl, String sessionId) {
         boolean completed = false;
         int consecutiveErrors = 0;
         final int maxConsecutiveErrors = 3;
 
         while (!completed && consecutiveErrors < maxConsecutiveErrors) {
             try {
-                SyncSessionResponse response = getNextSyncData(sessionId, 500);
+                SyncSessionResponse response = getNextSyncData(baseUrl, sessionId, 500);
 
                 if (response == null) {
                     log.error("Null response received for session: {}", sessionId);
@@ -106,6 +123,7 @@ public class SyncClient {
                         sessionId, response.getStage(),
                         response.getPage() + 1, response.getTotalPages(),
                         response.getData() != null ? response.getData().size() : 0);
+
                 if (response.getData() != null && !response.getData().isEmpty()) {
                     processDataBatch(response.getStage(), response);
                 } else {
@@ -153,7 +171,6 @@ public class SyncClient {
         switch (stage) {
             case "INSURANCES":
                 insuranceDataProcessor.processInsurancesData(response);
-
                 break;
             case "THERAPEUTIC_CLASSES":
                 therapeuticClassDataProcessor.processTherapeuticClassesData(response);
@@ -189,8 +206,8 @@ public class SyncClient {
 
     // REST API helper methods
 
-    private SyncSession startSyncSession(String deviceId, Double lastSyncVersion) {
-        String url = BASE_URL + "/start?deviceId=" + deviceId;
+    private SyncSession startSyncSession(String baseUrl, String deviceId, Double lastSyncVersion) {
+        String url = baseUrl + "/inventory/api/session/start?deviceId=" + deviceId;
         if (lastSyncVersion != null) {
             url += "&lastSyncVersion=" + lastSyncVersion;
         }
@@ -204,8 +221,8 @@ public class SyncClient {
         }
     }
 
-    private SyncSession resumeSyncSession(String sessionId) {
-        String url = BASE_URL + "/resume/" + sessionId;
+    private SyncSession resumeSyncSession(String baseUrl, String sessionId) {
+        String url = baseUrl + "/inventory/api/session/resume/" + sessionId;
 
         try {
             ResponseEntity<SyncSession> response = restTemplate.postForEntity(url, null, SyncSession.class);
@@ -216,8 +233,8 @@ public class SyncClient {
         }
     }
 
-    private SyncSessionResponse getNextSyncData(String sessionId, int pageSize) {
-        String url = BASE_URL + "/next/" + sessionId + "?pageSize=" + pageSize;
+    private SyncSessionResponse getNextSyncData(String baseUrl, String sessionId, int pageSize) {
+        String url = baseUrl + "/inventory/api/session/next/" + sessionId + "?pageSize=" + pageSize;
 
         try {
             ResponseEntity<SyncSessionResponse> response = restTemplate.getForEntity(url, SyncSessionResponse.class);
@@ -228,8 +245,8 @@ public class SyncClient {
         }
     }
 
-    private List<SyncSession> getActiveSessionsForDevice(String deviceId) {
-        String url = BASE_URL + "/device/" + deviceId + "/active";
+    private List<SyncSession> getActiveSessionsForDevice(String baseUrl, String deviceId) {
+        String url = baseUrl + "/inventory/api/session/device/" + deviceId + "/active";
 
         try {
             ResponseEntity<List> response = restTemplate.getForEntity(url, List.class);
@@ -240,10 +257,11 @@ public class SyncClient {
         }
     }
 
-    public void cancelSyncSession(String sessionId) {
-        String url = BASE_URL + "/cancel/" + sessionId;
-
+    public void cancelSyncSession(String deviceId, String sessionId) {
         try {
+            String baseUrl = getBaseUrlFromClient(deviceId);
+            String url = baseUrl + "/inventory/api/session/cancel/" + sessionId;
+
             restTemplate.postForEntity(url, null, String.class);
             log.info("Cancelled sync session: {}", sessionId);
         } catch (Exception e) {

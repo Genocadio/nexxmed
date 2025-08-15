@@ -16,7 +16,7 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/sales")
+@RequestMapping("/api/sales")
 @RequiredArgsConstructor
 public class SalesController {
 

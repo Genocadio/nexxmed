@@ -38,6 +38,7 @@ public class SecurityConfig {
     private final JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
     private final ClientActivationFilter clientActivationFilter;
+    private final DynamicCorsConfigurationSource dynamicCorsConfigurationSource;
 
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -61,28 +62,33 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
                 .csrf(AbstractHttpConfigurer::disable)
-                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+                .cors(cors -> cors.configurationSource(dynamicCorsConfigurationSource))
                 .exceptionHandling(ex -> ex.authenticationEntryPoint(jwtAuthenticationEntryPoint))
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(authz -> authz
-                        // Public endpoints
-                        .requestMatchers("/auth/login", "/auth/register", "/auth/refresh", "/api/sync/***", "/api/session/**").permitAll()
-                        .requestMatchers("/actuator/**").permitAll()
-                        .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
+                        // Public API endpoints
+                        .requestMatchers("/api/auth/login", "/api/auth/register", "/api/auth/refresh", "/api/api/sync/***", "/api/api/session/**").permitAll()
+                        .requestMatchers("/api/actuator/**").permitAll()
+                        .requestMatchers("/api/activation").permitAll()
+                        .requestMatchers("/api/swagger-ui/**", "/api/v3/api-docs/**").permitAll()
+                        .requestMatchers("/api/command/**").permitAll()
 
                         // Admin only endpoints
-                        .requestMatchers(HttpMethod.PUT, "/auth/users/*/status").hasRole("ADMIN")
-                        .requestMatchers(HttpMethod.PUT, "/auth/users/*/deactivate").hasRole("ADMIN")
-                        .requestMatchers(HttpMethod.PUT, "/auth/users/*/activate").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.PUT, "/api/auth/users/*/status").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.PUT, "/api/auth/users/*/deactivate").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.PUT, "/api/auth/users/*/activate").hasRole("ADMIN")
 
                         // Manager and Admin endpoints
-                        .requestMatchers(HttpMethod.GET, "/auth/users/*").hasAnyRole("ADMIN", "MANAGER")
+                        .requestMatchers(HttpMethod.GET, "/api/auth/users/*").hasAnyRole("ADMIN", "MANAGER")
 
                         // Authenticated user endpoints
-                        .requestMatchers("/auth/me", "/auth/change-password").authenticated()
+                        .requestMatchers("/api/auth/me", "/api/auth/change-password").authenticated()
 
-                        // All other requests require authentication
-                        .anyRequest().authenticated()
+                        // All other API requests require authentication
+                        .requestMatchers("/api/**").authenticated()
+
+                        // Allow ALL non-API requests (frontend routes and static resources)
+                        .anyRequest().permitAll()
                 )
                 .authenticationProvider(authenticationProvider(null)) // Will be injected
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)

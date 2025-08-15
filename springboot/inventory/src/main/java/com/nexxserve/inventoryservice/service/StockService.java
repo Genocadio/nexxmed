@@ -1,6 +1,7 @@
 package com.nexxserve.inventoryservice.service;
 
 import com.nexxserve.catalog.grpc.GrpcProductType;
+import com.nexxserve.inventoryservice.dto.admin.InventoryReportDTO;
 import com.nexxserve.inventoryservice.dto.stock.CreateStockEntryRequest;
 import com.nexxserve.inventoryservice.dto.stock.StockAlertResponse;
 import com.nexxserve.inventoryservice.dto.stock.StockEntryResponse;
@@ -18,9 +19,11 @@ import com.nexxserve.inventoryservice.mapper.StockAlertMapper;
 import com.nexxserve.inventoryservice.mapper.StockEntryMapper;
 import com.nexxserve.inventoryservice.repository.StockAlertRepository;
 import com.nexxserve.inventoryservice.repository.StockEntryRepository;
+import com.nexxserve.inventoryservice.service.admin.RemoteReportService;
 import com.nexxserve.medicine.grpc.MedicineProto;
 import com.nexxserve.inventoryservice.dto.ProductNameInfo;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -31,6 +34,7 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class StockService {
@@ -43,6 +47,7 @@ public class StockService {
 //    private final ProductGrpcClient productGrpcClient;
     private final ProductEnrichmentService productEnrichmentService;
     private final UserService userService;
+    private final RemoteReportService remoteReportService;
 
 
     // Default threshold for low stock alerts
@@ -77,10 +82,34 @@ public class StockService {
 
         // Check if alerts need to be generated
         checkAndGenerateAlerts(savedEntry);
+        try {
+            InventoryReportDTO dto = toInventoryReportDTO(savedEntry);
+            remoteReportService.sendInventoryReport(dto);
+            log.info("Sent inventory report for stock entry {}", savedEntry.getId());
+        } catch (Exception e) {
+            log.error("Failed to send inventory report for stock entry {}: {}", savedEntry.getId(), e.getMessage());
+        }
 
         // Return response
         StockEntryResponse response = stockEntryMapper.toResponse(savedEntry);
         return productEnrichmentService.enrichStockEntryWithProductData(response);
+    }
+
+    private InventoryReportDTO toInventoryReportDTO(StockEntry entry) {
+        InventoryReportDTO dto = new InventoryReportDTO();
+        dto.setTransactionId(entry.getId().toString());
+        dto.setProductType(entry.getProductType());
+        dto.setProductId(entry.getReferenceId());
+        dto.setAction("ADDITION");
+        dto.setQuantity(entry.getQuantity());
+        dto.setBuyingPrice(entry.getCostPrice().doubleValue());
+        dto.setSellingPrice(entry.getUnitPrice().doubleValue());
+        dto.setSupplierName(entry.getSupplierName());
+        dto.setDoneBy(entry.getCreatedBy());
+        dto.setDoneAt(entry.getCreatedAtAsLocalDateTime());
+        dto.setExpirationDate(entry.getExpirationDate());
+        // Set other fields as needed
+        return dto;
     }
 
 

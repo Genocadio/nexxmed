@@ -14,7 +14,7 @@ import java.util.List;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/variants")
+@RequestMapping("/api/variants")
 @RequiredArgsConstructor
 public class VariantController {
 

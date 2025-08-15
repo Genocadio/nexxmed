@@ -12,6 +12,7 @@ import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
 import java.util.Optional;
+import java.time.Instant;
 
 @Component
 @Slf4j
@@ -47,24 +48,48 @@ public class ClientCredentialsStore {
         repository.save(entity);
     }
 
-    public void saveStatus(boolean isRegistered, boolean isActivated, String token) {
-        log.info("Saving client status to database: registered={}, activated={}, hasToken={}",
-                isRegistered, isActivated, (token != null));
+    public String getServerUrl() {
+        Optional<ClientCredentialEntity> entityOpt = repository.findById(CLIENT_ID);
+        if (entityOpt.isPresent()) {
+            return entityOpt.get().getServerUrl();
+        }
+        return null;
+    }
 
+    public String getToken() {
+        Optional<ClientCredentialEntity> entityOpt = repository.findById(CLIENT_ID);
+        if (entityOpt.isPresent()) {
+            ClientCredentialEntity entity = entityOpt.get();
+            if (entity.getEncryptedToken() != null) {
+                try {
+                    return encryptor.decrypt(entity.getEncryptedToken());
+                } catch (Exception e) {
+                    log.warn("Failed to decrypt token: {}", e.getMessage());
+                    // Clear corrupted token
+                    entity.setEncryptedToken(null);
+                    repository.save(entity);
+                }
+            }
+        }
+        return null;
+    }
+
+    public void saveStatus(boolean isRegistered, boolean isActivated, String token, String serverUrl, Instant tokenSavedAt) {
+        log.info("Saving client status to database: registered={}, activated={}, hasToken={}", isRegistered, isActivated, (token != null));
         ClientCredentialEntity entity = getOrCreateEntity();
-
         entity.setRegistered(isRegistered);
         entity.setActivated(isActivated);
-
+        entity.setServerUrl(serverUrl);
+        entity.setTokenSavedAt(tokenSavedAt);
         if (token != null) {
             entity.setEncryptedToken(encryptor.encrypt(token));
         } else {
             entity.setEncryptedToken(null);
         }
-
         repository.save(entity);
         log.info("Client status saved successfully");
     }
+
 
     public ClientCredentials loadCredentials() {
         Optional<ClientCredentialEntity> entityOpt = repository.findById(CLIENT_ID);

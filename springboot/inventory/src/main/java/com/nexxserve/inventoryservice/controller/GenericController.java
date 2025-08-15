@@ -14,7 +14,7 @@ import java.util.List;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/generics")
+@RequestMapping("/api/generics")
 @RequiredArgsConstructor
 public class GenericController {
 

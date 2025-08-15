@@ -1,18 +1,11 @@
 package com.nexxserve.medadmin.processor;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nexxserve.medadmin.dto.sync.InsuranceDto;
-import com.nexxserve.medadmin.dto.sync.InsuranceSyncData;
 import com.nexxserve.medadmin.dto.sync.SyncSessionResponse;
-import com.nexxserve.medadmin.service.sync.InsuranceSyncService;
+import com.nexxserve.medadmin.service.sync.in.InsuranceSyncInService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-
-import java.util.List;
-import java.util.LinkedHashMap;
-import java.util.stream.Collectors;
 
 @Component
 @Slf4j
@@ -20,7 +13,7 @@ import java.util.stream.Collectors;
 public class InsuranceDataProcessor extends BaseDataProcessor<InsuranceDto> {
 
 
-    private final InsuranceSyncService insuranceSyncService;
+    private final InsuranceSyncInService insuranceSyncInService;
 
     @Override
     protected String getExpectedStage() {
@@ -41,7 +34,7 @@ public class InsuranceDataProcessor extends BaseDataProcessor<InsuranceDto> {
 
     @Override
     protected void processSingleRecord(InsuranceDto syncData) {
-        insuranceSyncService.saveInsuranceFromSync(syncData);
+        insuranceSyncInService.saveInsuranceFromSync(syncData);
     }
     public void processInsurancesData(SyncSessionResponse response) {
         log.info("Starting insurance data process sync...");

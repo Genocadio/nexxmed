@@ -19,7 +19,7 @@ import java.util.List;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/product-variants")
+@RequestMapping("/api/product-variants")
 @RequiredArgsConstructor
 @Slf4j
 @Validated

@@ -1,7 +1,8 @@
 package com.nexxserve.medadmin.dto.response;
 
-import com.nexxserve.medadmin.entity.Owners;
 import com.nexxserve.medadmin.entity.clients.Client;
+import com.nexxserve.medadmin.enums.ClientStatus;
+import com.nexxserve.medadmin.enums.ServiceType;
 import lombok.Getter;
 import lombok.Setter;
 import java.util.List;
@@ -17,7 +18,9 @@ public class CreateClientResponse {
     private String phoneNumber;
     private String email;
     private String location;
-    private Owners owner;
+    private ServiceType serviceType;
+    private ClientStatus status;
+    private OwnerResponseDto owner;
     private List<InsuranceResponseDto> insurances;
 
     public static CreateClientResponse fromEntity(Client client) {
@@ -28,9 +31,10 @@ public class CreateClientResponse {
         response.setName(client.getName());
         response.setPhoneNumber(client.getPhone());
         response.setEmail(client.getEmail());
-        response.setLocation(client.getBaseUrl());
-        response.setOwner(client.getOwner());
-
+        response.setLocation(client.getLocation());
+        response.setServiceType(client.getServiceType());
+        response.setStatus(client.getStatus());
+        response.setOwner(OwnerResponseDto.fromEntity(client.getOwner()));
         if (client.getInsurances() != null) {
             response.setInsurances(
                 client.getInsurances().stream()
@@ -38,7 +42,6 @@ public class CreateClientResponse {
                     .toList()
             );
         }
-
         return response;
     }
 }

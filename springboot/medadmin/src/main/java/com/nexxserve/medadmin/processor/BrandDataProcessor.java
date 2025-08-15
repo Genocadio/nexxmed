@@ -2,7 +2,7 @@ package com.nexxserve.medadmin.processor;
 
 import com.nexxserve.medadmin.dto.sync.BrandSyncData;
 import com.nexxserve.medadmin.dto.sync.SyncSessionResponse;
-import com.nexxserve.medadmin.service.sync.BrandSyncService;
+import com.nexxserve.medadmin.service.sync.in.BrandSyncInService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -12,7 +12,7 @@ import org.springframework.stereotype.Component;
 @Slf4j
 @RequiredArgsConstructor
 public class BrandDataProcessor extends BaseDataProcessor<BrandSyncData> {
-    private final BrandSyncService brandSyncService;
+    private final BrandSyncInService brandSyncInService;
     @Override
     protected String getExpectedStage() {
         return "BRANDS";
@@ -31,7 +31,7 @@ public class BrandDataProcessor extends BaseDataProcessor<BrandSyncData> {
     }
     @Override
     protected void processSingleRecord(BrandSyncData syncData) {
-        brandSyncService.saveBrandFromSync(syncData);
+        brandSyncInService.saveBrandFromSync(syncData);
     }
 
     public void processBrandData(SyncSessionResponse response) {

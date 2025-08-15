@@ -17,7 +17,7 @@ import java.util.List;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/product-families")
+@RequestMapping("/api/product-families")
 @RequiredArgsConstructor
 @Slf4j
 @Validated

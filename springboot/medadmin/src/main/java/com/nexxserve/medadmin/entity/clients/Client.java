@@ -2,7 +2,11 @@ package com.nexxserve.medadmin.entity.clients;
 
 import com.nexxserve.medadmin.entity.BaseEntity;
 import com.nexxserve.medadmin.enums.ClientStatus;
+import com.nexxserve.medadmin.enums.ServiceType;
+import com.nexxserve.medadmin.enums.SubscriptionType;
 import jakarta.persistence.*;
+
+import java.time.Instant;
 import java.time.LocalDateTime;
 import com.nexxserve.medadmin.entity.Owners;
 import lombok.Getter;
@@ -36,9 +40,20 @@ public class Client extends BaseEntity {
     @Column(nullable = false)
     private String baseUrl;
 
+    private String location;
+
+    @Column(nullable = false)
+    private ServiceType serviceType;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "owner_id", nullable = false)
     private Owners owner;
+
+    @Column(nullable = false)
+    @Enumerated(EnumType.STRING)
+    private SubscriptionType subscriptionType;
+
+    private Instant activationTime;
 
     @ManyToMany
     @JoinTable(
